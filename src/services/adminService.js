@@ -15,7 +15,7 @@ const adminService = {
 
   getDsNhanSuQuanLy: () => axios.get("/api/admin/quan-ly-nhan-su"),
 
-  searchNhanSu: (params) => axios.get("/api/admin/quan-ly-nhan-su", { params }),
+  searchNhanSu: (params) => axios.post("/api/admin/quan-ly-nhan-su", params),
 
   tongquan: (thoiGian) =>
     axios.get(`/api/admin/tong-quan-du-an?thoiGian=${thoiGian}`),
