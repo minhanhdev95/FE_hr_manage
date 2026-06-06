@@ -76,29 +76,9 @@ const DashboardPage = () => {
             picker="month" 
             format="MM-YYYY" 
             allowClear={false}
-            value={dayjs(selectedThoiGian, 'MM-YYYY')}
             defaultPickerValue={dayjs()}
             // Khi đổi tháng, chỉ cập nhật giá trị chọn. Chỉ bấm nút Tìm kiếm mới gọi API.
             onChange={(date) => setSelectedThoiGian(date ? date.format('MM-YYYY') : dayjs().format('MM-YYYY'))}
-            dateRender={(current) => {
-              const isCurrentMonth = current.isSame(dayjs(), 'month');
-              return (
-                <div
-                  style={{
-                    width: '100%',
-                    height: '100%',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    borderRadius: 4,
-                    backgroundColor: isCurrentMonth ? '#e6f7ff' : undefined,
-                    color: isCurrentMonth ? '#1890ff' : undefined,
-                  }}
-                >
-                  {current.format('MM')}
-                </div>
-              );
-            }}
           />
           <Button type="primary" icon={<SearchOutlined />} onClick={handleSearch}>
             Tìm kiếm
