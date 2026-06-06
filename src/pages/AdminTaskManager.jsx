@@ -292,7 +292,7 @@ const AdminTaskManager = () => {
           <Card 
             title={<b>Danh sách công việc</b>}
             extra={<div style={{ display: 'flex', gap: 8 }}>
-              <Button type="primary" icon={<PlusOutlined />} onClick={() => setIsGiaoViecOpen(true)}>Giao việc</Button>
+              <Button type="primary" icon={<PlusOutlined />} onClick={() => setIsGiaoViecOpen(true)}>Giao côngviệc</Button>
             </div>}
           >
             <Table
@@ -310,25 +310,25 @@ const AdminTaskManager = () => {
       <Modal
         title={<b>Giao công việc</b>}
         open={isGiaoViecOpen}
-        onCancel={() => setIsGiaoViecOpen(false)}
+        onCancel={() => { setIsGiaoViecOpen(false); giaoViecForm.resetFields(); }}
         footer={null}
         width={700}
       >
         <Form form={giaoViecForm} layout="vertical">
-          <Form.Item name="noiDungCongViec" label="Nội dung công việc *">
+          <Form.Item name="noiDungCongViec" label={<span> Nội dung công việc <span style={{ color: 'red' }}>*</span></span>}>
             <TextArea rows={4} placeholder="Nhập nội dung..." />
           </Form.Item>
 
           <Row gutter={16}>
             <Col span={12}>
-              <Form.Item name="nhanSuUuid" label="Nhân sự *">
+              <Form.Item name="nhanSuUuid" label={<span> Nhân sự <span style={{ color: 'red' }}>*</span></span>}>
                 <Select placeholder="Chọn nhân sự">
                   {users.map(u => <Select.Option key={u.uuid} value={u.uuid}>{u.hoTen}</Select.Option>)}
                 </Select>
               </Form.Item>
             </Col>
             <Col span={12}>
-              <Form.Item name="sanPhamId" label="Sản phẩm *">
+              <Form.Item name="sanPhamId" label={<span> Sản phẩm <span style={{ color: 'red' }}>*</span></span>}>
                 <Select placeholder="Chọn sản phẩm">
                   {products.map(p => <Select.Option key={p.id} value={p.id}>{p.ten}</Select.Option>)}
                 </Select>
@@ -338,21 +338,20 @@ const AdminTaskManager = () => {
 
           <Row gutter={16}>
             <Col span={12}>
-              <Form.Item name="ngayBatDau" label="Ngày bắt đầu *">
+              <Form.Item name="ngayBatDau" label={<span> Ngày bắt đầu <span style={{ color: 'red' }}>*</span></span>}>
                 <DatePicker style={{ width: '100%' }} format="DD/MM/YYYY" />
               </Form.Item>
             </Col>
             <Col span={12}>
-              <Form.Item name="ngayKetThuc" label="Ngày kết thúc *">
+              <Form.Item name="ngayKetThuc" label={<span> Ngày kết thúc <span style={{ color: 'red' }}>*</span></span>}>
                 <DatePicker style={{ width: '100%' }} format="DD/MM/YYYY" />
               </Form.Item>
             </Col>
           </Row>
 
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '20px' }}>
-            <Button icon={<CloseOutlined />} onClick={() => setIsGiaoViecOpen(false)}>Hủy</Button>
-            {/* <Button onClick={() => handleGiaoViec(true)}>Giao và tạo tiếp</Button> */}
-            <Button type="primary" icon={<CheckCircleOutlined />} onClick={() => handleGiaoViec(false)}>Giao việc</Button>
+            <Button type="primary" icon={<CheckCircleOutlined />} onClick={() => handleGiaoViec(false)}>Giao công việc</Button>
+            <Button icon={<CloseOutlined />} onClick={() => { setIsGiaoViecOpen(false); giaoViecForm.resetFields(); }}>Hủy</Button>
           </div>
         </Form>
       </Modal>
