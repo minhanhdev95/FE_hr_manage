@@ -17,6 +17,19 @@ const adminService = {
     tongquan: (thoiGian) =>
         axios.get(`/api/admin/tong-quan-du-an?thoiGian=${thoiGian}`),
 
+    insertCongViec: (data) =>
+        axios.post(`/api/admin/giao-cong-viec?nhanSuId=${data.nhanSuIds[0]}`, {
+            noiDungCongViec: data.noiDungCongViec,
+            loaiCongViecId: data.loaiCongViecId,
+            maCongViec: data.maCongViec,
+            noLucThucHien: data.noLucThucHien,
+            trangThaiId: data.trangThaiId,
+            sanPhamId: data.sanPhamId,
+            nhanSuIds: data.nhanSuIds,
+            ngayBatDau: data.ngayBatDau,
+            ngayKetThuc: data.ngayKetThuc
+        }),
+
 
 };
 

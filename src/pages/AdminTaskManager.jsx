@@ -160,8 +160,10 @@ const AdminTaskManager = () => {
 
     const payload = {
       noiDungCongViec: values.noiDungCongViec,
-      nhanSuUuid: values.nhanSuUuid,
+      nhanSuIds: [values.nhanSuUuid],
       sanPhamId: values.sanPhamId,
+      loaiCongViecId: values.loaiCongViecId,
+      noLucThucHien: values.noLucThucHien,
       ngayBatDau: values.ngayBatDau ? values.ngayBatDau.format('DD-MM-YYYY') : null,
       ngayKetThuc: values.ngayKetThuc ? values.ngayKetThuc.format('DD-MM-YYYY') : null,
       trangThaiId: 1
@@ -171,7 +173,7 @@ const AdminTaskManager = () => {
 
     try {
       setLoading(true);
-      const res = await adminService.insert(payload);
+      const res = await adminService.insertCongViec(payload);
       console.log(">>> Kết quả API:", res);
       
       message.success("Đã giao công việc thành công!");
@@ -184,7 +186,8 @@ const AdminTaskManager = () => {
         fetchTasks(pagination.current);
       }
     } catch (err) {
-      message.error("Lỗi khi gọi API insert. Kiểm tra Network.");
+      console.error(err);
+      message.error("Lỗi khi gọi API insertCongViec. Kiểm tra Network.");
     } finally {
       setLoading(false);
     }
@@ -345,6 +348,21 @@ const AdminTaskManager = () => {
             <Col span={12}>
               <Form.Item name="ngayKetThuc" label={<span> Ngày kết thúc <span style={{ color: 'red' }}>*</span></span>}>
                 <DatePicker style={{ width: '100%' }} format="DD/MM/YYYY" />
+              </Form.Item>
+            </Col>
+          </Row>
+
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item name="loaiCongViecId" label={<span> Loại công việc <span style={{ color: 'red' }}>*</span></span>}>
+                <Select placeholder="Chọn loại công việc">
+                  {types.map(t => <Select.Option key={t.id} value={t.id}>{t.ten}</Select.Option>)}
+                </Select>
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item name="noLucThucHien" label={<span> Nỗ lực <span style={{ color: 'red' }}>*</span></span>}>
+                <Input placeholder="Nhập nỗ lực..." />
               </Form.Item>
             </Col>
           </Row>
