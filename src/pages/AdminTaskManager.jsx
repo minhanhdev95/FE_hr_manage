@@ -131,6 +131,21 @@ const AdminTaskManager = () => {
     }
   };
 
+  const getStatusTagProps = (statusId) => {
+    switch (statusId) {
+      case 1:
+        return { color: 'default', style: { color: '#8c8c8c' } }; // xám chữ
+      case 2:
+        return { color: 'yellow' };
+      case 3:
+        return { color: 'red' };
+      case 4:
+        return { color: 'blue' };
+      case 5:
+        return { color: 'green' };
+    }
+  };
+
   const columns = [
     { title: 'STT', render: (_, __, index) => index + 1 + (pagination.current - 1) * pagination.pageSize, width: 60 },
     { title: 'Mã CV', dataIndex: 'maCongViec', width: 120 },
@@ -139,7 +154,7 @@ const AdminTaskManager = () => {
     { title: 'Loại công việc', dataIndex: 'loaiCongViecTen', width: 180 },
     { title: 'Sản phẩm', dataIndex: 'sanPhamTen', width: 180 },
     { title: 'Nỗ lực', dataIndex: 'noLucThucHien', width: 100 },
-    { title: 'Trạng thái', dataIndex: 'trangThaiTen', render: (t) => <Tag color="blue">{t}</Tag>, width: 140 },
+    { title: 'Trạng thái', dataIndex: 'trangThaiTen', render: (t, record) => <Tag {...getStatusTagProps(record.trangThaiId)}>{t}</Tag>, width: 140 },
     { title: 'Ngày bắt đầu', dataIndex: 'ngayBatDauString', width: 180 },
     { title: 'Ngày kết thúc', dataIndex: 'ngayKetThucString', width: 180 },
     { title: 'Thao tác', width: 60, render: () => <Button icon={<EditOutlined />} type="text" /> }
@@ -210,7 +225,7 @@ const AdminTaskManager = () => {
           <Card 
             title={<b>Danh sách công việc</b>}
             extra={<div style={{ display: 'flex', gap: 8 }}>
-              <Button type="primary" icon={<PlusOutlined />} onClick={() => setIsGiaoViecOpen(true)}>Giao công việc</Button>
+              <Button type="primary" icon={<PlusOutlined />} onClick={() => setIsGiaoViecOpen(true)}>Giao việc</Button>
             </div>}
           >
             <Table
