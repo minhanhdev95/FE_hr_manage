@@ -24,12 +24,9 @@ function App() {
   return (
     <Router>
       <Routes>
-        {/* 1. Trang Login: Không có Sidebar */}
+        // Login page
         <Route path="/login" element={<LoginPage />} />
-
-        {/* 2. Các trang nghiệp vụ: Cần Login và có Sidebar (MainLayout) */}
-        
-        {/* Trang Tổng quan (Biểu đồ) của admin*/}
+        // Admin dashboard
         <Route 
           path="/admin-dashboard" 
           element={
@@ -40,19 +37,17 @@ function App() {
             </PrivateRoute>
           } 
         />
-
-        {/* Alias để truy cập mặc định vào trang Dashboard */}
-        {/* <Route 
-          path="/dashboard" 
-          element={
-            <PrivateRoute>
-              <MainLayout>
-                <DashboardPage />
-              </MainLayout>
-            </PrivateRoute>
-          } 
-        /> */}
-
+        // Admin task manager
+          <Route 
+            path="/admin-task-manager" 
+            element={
+              <PrivateRoute>
+                <MainLayout>
+                  <AdminTaskManager />
+                </MainLayout>
+              </PrivateRoute>
+            } 
+          />
         {/* Trang Công việc cá nhân cho user */}
         <Route 
           path="/user-dashboard" 
@@ -65,17 +60,7 @@ function App() {
           } 
         />
 
-        {/* Trang Quản lý công việc nhân sự (Dành cho Admin) */}
-        <Route 
-          path="/admin-tasks" 
-          element={
-            <PrivateRoute>
-              <MainLayout>
-                <AdminTaskManager />
-              </MainLayout>
-            </PrivateRoute>
-          } 
-        />
+        
 
         {/* Trang Công việc cá nhân */}
         <Route 
