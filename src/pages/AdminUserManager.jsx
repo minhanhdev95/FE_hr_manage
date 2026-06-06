@@ -72,9 +72,11 @@ const AdminUserManager = () => {
   const columns = [
     { title: 'Họ tên', dataIndex: 'hoTen', key: 'hoTen' },
     { title: 'Mã định danh', dataIndex: 'maDinhDanh', key: 'maDinhDanh' },
-    { title: 'Giới tính', dataIndex: 'gioiTinhTen', key: 'gioiTinhTen' },
-    { title: 'Dân tộc', dataIndex: 'danTocTen', key: 'danTocTen' },
+    { title: 'Giới tính', dataIndex: 'gioiTinh', key: 'gioiTinhTen' },
+    { title: 'Dân tộc', dataIndex: 'danToc', key: 'danTocTen' },
     { title: 'Email', dataIndex: 'email', key: 'email' },
+    { title: 'Username', dataIndex: 'userName', key: 'userName' },
+    { title: 'Quyền', dataIndex: 'roleName', key: 'roleName' },
     { title: 'Ghi chú', dataIndex: 'ghiChu', key: 'ghiChu' },
   ];
 
