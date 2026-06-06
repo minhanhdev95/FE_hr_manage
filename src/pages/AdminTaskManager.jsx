@@ -73,10 +73,6 @@ const AdminTaskManager = () => {
   };
 
   useEffect(() => {
-    if (selectedUserIds.length > 0) fetchTasks(1, 10, selectedUserIds);
-  }, [selectedUserIds]);
-
-  useEffect(() => {
     // load danh mục LOAI_CONG_VIEC and TRANG_THAI_CONG_VIEC
     const loadTypesAndStatuses = async () => {
       try {
@@ -138,19 +134,21 @@ const AdminTaskManager = () => {
   const columns = [
     { title: 'STT', render: (_, __, index) => index + 1 + (pagination.current - 1) * pagination.pageSize, width: 60 },
     { title: 'Mã CV', dataIndex: 'maCongViec', width: 120 },
+    { title: 'Nhân sự', dataIndex: 'nhanSuHoVaTen', width: 200 },
     { title: 'Nội dung công việc', dataIndex: 'noiDungCongViec', ellipsis: true },
-    { title: 'Loại CV', dataIndex: 'loaiCongViecTen', width: 140 },
+    { title: 'Loại công việc', dataIndex: 'loaiCongViecTen', width: 180 },
+    { title: 'Sản phẩm', dataIndex: 'sanPhamTen', width: 180 },
     { title: 'Nỗ lực', dataIndex: 'noLucThucHien', width: 100 },
     { title: 'Trạng thái', dataIndex: 'trangThaiTen', render: (t) => <Tag color="blue">{t}</Tag>, width: 140 },
     { title: 'Ngày bắt đầu', dataIndex: 'ngayBatDauString', width: 180 },
     { title: 'Ngày kết thúc', dataIndex: 'ngayKetThucString', width: 180 },
-    { title: 'Sửa', width: 60, render: () => <Button icon={<EditOutlined />} type="text" /> }
+    { title: 'Thao tác', width: 60, render: () => <Button icon={<EditOutlined />} type="text" /> }
   ];
 
   return (
     <div style={{ padding: '24px', background: '#f5f7f9', minHeight: '100vh' }}>
       <Row gutter={24}>
-        <Col span={6}>
+        <Col span={4}>
           <Card title={<b>Danh sách nhân sự</b>} style={{ body: { padding: '0px' } }} loading={userLoading}>
              <div style={{ padding: '12px', borderBottom: '1px solid #f0f0f0' }}>
               <Checkbox 
@@ -177,7 +175,7 @@ const AdminTaskManager = () => {
           </Card>
         </Col>
 
-        <Col span={18}>
+        <Col span={20}>
           <Card style={{ marginBottom: 16 }}>
             <Form form={filterForm} layout="vertical">
               <Row gutter={[16, 0]}>
@@ -185,8 +183,8 @@ const AdminTaskManager = () => {
                 <Col span={6}><Form.Item name="sanPhamId" label="Sản phẩm"><Select placeholder="Chọn sản phẩm" options={(products||[]).map(p=>({ value: p.id, label: p.ten }))} allowClear /></Form.Item></Col>
                 <Col span={6}><Form.Item name="loaiCongViecId" label="Loại CV"><Select placeholder="Chọn loại" options={(types||[]).map(t=>({ value: t.id, label: t.ten }))} allowClear /></Form.Item></Col>
                 <Col span={6}><Form.Item name="trangThaiId" label="Trạng thái"><Select placeholder="Chọn trạng thái" options={(statuses||[]).map(s=>({ value: s.id, label: s.ten }))} allowClear /></Form.Item></Col>
-                <Col span={8}><Form.Item name="rangeDate" label="Khoảng thời gian"><RangePicker format="DD-MM-YYYY" style={{ width: '100%' }} /></Form.Item></Col>
-                <Col span={4} style={{ display: 'flex', alignItems: 'flex-end', paddingBottom: '24px' }}>
+                <Col span={12}><Form.Item name="rangeDate" label="Khoảng thời gian"><RangePicker format="DD-MM-YYYY" style={{ width: '100%' }} /></Form.Item></Col>
+                <Col span={12} style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'flex-end', paddingBottom: '24px' }}>
                   <Space>
                     <Button type="primary" icon={<SearchOutlined />} onClick={() => {
                       if (!selectedUserIds || selectedUserIds.length === 0) {
@@ -215,7 +213,14 @@ const AdminTaskManager = () => {
               <Button type="primary" icon={<PlusOutlined />} onClick={() => setIsGiaoViecOpen(true)}>Giao công việc</Button>
             </div>}
           >
-            <Table columns={columns} dataSource={tasks} rowKey="uuid" loading={loading} pagination={{ current: pagination.current, total: pagination.total, onChange: (p) => fetchTasks(p, pagination.pageSize, selectedUserIds) }} />
+            <Table
+              columns={columns}
+              dataSource={tasks}
+              rowKey="uuid"
+              loading={loading}
+              pagination={{ current: pagination.current, total: pagination.total, onChange: (p) => fetchTasks(p, pagination.pageSize, selectedUserIds) }}
+              scroll={{ x: 'max-content', y: '500px' }}
+            />
           </Card>
         </Col>
       </Row>
