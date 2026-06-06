@@ -80,9 +80,8 @@ const AdminUserManager = () => {
     }
   };
 
-  const handleReset = async () => {
+  const handleReset = () => {
     filterForm.resetFields();
-    await loadUsers();
   };
 
   if (!authService.isAdmin()) {
@@ -168,13 +167,18 @@ const AdminUserManager = () => {
                   <div>
                     <Button
                       type="primary"
+                      htmlType="button"
                       icon={<SearchOutlined />}
                       onClick={handleSearch}
                       style={{ marginRight: 8 }}
                     >
                       Tìm kiếm
                     </Button>
-                    <Button icon={<ReloadOutlined />} onClick={handleReset}>
+                    <Button
+                      htmlType="button"
+                      icon={<ReloadOutlined />}
+                      onClick={handleReset}
+                    >
                       Làm mới
                     </Button>
                   </div>
