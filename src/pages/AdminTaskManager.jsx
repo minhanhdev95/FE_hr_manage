@@ -1,16 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { Row, Col, Card, Checkbox, Table, Button, Tag, Space, Modal, Form, Input, Select, DatePicker, message, Avatar } from 'antd';
-import { EditOutlined, UserOutlined, PlusOutlined } from '@ant-design/icons';
+import { EditOutlined, UserOutlined, PlusOutlined, SearchOutlined, ReloadOutlined } from '@ant-design/icons';
 import adminService from '../services/adminService';
 import danhMucService from '../services/danhMucService';
 import dayjs from 'dayjs';
 
 const { TextArea } = Input;
+const { RangePicker } = DatePicker;
 
 const AdminTaskManager = () => {
   const [tasks, setTasks] = useState([]);
   const [users, setUsers] = useState([]);
   const [products, setProducts] = useState([]);
+  const [types, setTypes] = useState([]);
+  const [statuses, setStatuses] = useState([]);
   const [selectedUserIds, setSelectedUserIds] = useState([]);
   const [loading, setLoading] = useState(false);
   const [userLoading, setUserLoading] = useState(false);
@@ -23,12 +26,16 @@ const AdminTaskManager = () => {
     const loadInitialData = async () => {
       setUserLoading(true);
       try {
-        const [resUsers, resProducts] = await Promise.all([
+        const [resUsers, resProducts, resTypes, resStatuses] = await Promise.all([
           adminService.getNhanSu(),
-          danhMucService.findAll(danhMucService.TABLES.SAN_PHAM)
+          danhMucService.findAll(danhMucService.TABLES.SAN_PHAM),
+          danhMucService.findAll(danhMucService.TABLES.LOAI_CONG_VIEC),
+          danhMucService.findAll(danhMucService.TABLES.TRANG_THAI_CONG_VIEC)
         ]);
         setUsers(resUsers.data || []);
         setProducts(resProducts || []);
+        setTypes(resTypes || []);
+        setStatuses(resStatuses || []);
       } catch (err) {
         message.error("Lỗi tải dữ liệu");
       } finally {
@@ -38,13 +45,26 @@ const AdminTaskManager = () => {
     loadInitialData();
   }, []);
 
-  const fetchTasks = async (page = 1, size = 10, userIds = selectedUserIds) => {
-    if (userIds.length === 0) { setTasks([]); return; }
+  const [filterForm] = Form.useForm();
+
+  const fetchTasks = async (page = 1, size = 10, userIds = selectedUserIds, filters = {}) => {
+    // if no users selected, show empty
+    if (userIds.length === 0) {
+      setTasks([]);
+      setPagination(prev => ({ ...prev, current: 1, total: 0 }));
+      return;
+    }
     setLoading(true);
     try {
-      const res = await adminService.findAll({ nhanSuIds: userIds }, page - 1, size);
-      setTasks(res.data || []);
-      setPagination(prev => ({ ...prev, current: page, total: res.data[0]?.tongSoBanGhi || 0 }));
+      const payload = { ...filters, nhanSuIds: userIds };
+      const res = await adminService.findAll(payload, page - 1, size);
+      const taskList = res.data || [];
+      setTasks(taskList);
+      setPagination(prev => ({
+        ...prev,
+        current: page,
+        total: taskList[0]?.tongSoBanGhi || taskList.length || 0,
+      }));
     } catch (error) {
       console.error(error);
     } finally {
@@ -55,6 +75,23 @@ const AdminTaskManager = () => {
   useEffect(() => {
     if (selectedUserIds.length > 0) fetchTasks(1, 10, selectedUserIds);
   }, [selectedUserIds]);
+
+  useEffect(() => {
+    // load danh mục LOAI_CONG_VIEC and TRANG_THAI_CONG_VIEC
+    const loadTypesAndStatuses = async () => {
+      try {
+        const [resTypes, resStatuses] = await Promise.all([
+          danhMucService.findAll(danhMucService.TABLES.LOAI_CONG_VIEC),
+          danhMucService.findAll(danhMucService.TABLES.TRANG_THAI_CONG_VIEC)
+        ]);
+        setTypes(resTypes || []);
+        setStatuses(resStatuses || []);
+      } catch (err) {
+        // ignore
+      }
+    };
+    loadTypesAndStatuses();
+  }, []);
 
   // HÀM XỬ LÝ GIAO VIỆC - ĐÃ BỎ VALIDATE CHẶN
   const handleGiaoViec = async (isCreateMore = false) => {
@@ -99,9 +136,14 @@ const AdminTaskManager = () => {
   };
 
   const columns = [
-    { title: 'STT', render: (_, __, index) => index + 1 + (pagination.current - 1) * 10, width: 60 },
+    { title: 'STT', render: (_, __, index) => index + 1 + (pagination.current - 1) * pagination.pageSize, width: 60 },
+    { title: 'Mã CV', dataIndex: 'maCongViec', width: 120 },
     { title: 'Nội dung công việc', dataIndex: 'noiDungCongViec', ellipsis: true },
-    { title: 'Trạng thái', dataIndex: 'trangThaiTen', render: (t) => <Tag color="blue">{t}</Tag> },
+    { title: 'Loại CV', dataIndex: 'loaiCongViecTen', width: 140 },
+    { title: 'Nỗ lực', dataIndex: 'noLucThucHien', width: 100 },
+    { title: 'Trạng thái', dataIndex: 'trangThaiTen', render: (t) => <Tag color="blue">{t}</Tag>, width: 140 },
+    { title: 'Ngày bắt đầu', dataIndex: 'ngayBatDauString', width: 180 },
+    { title: 'Ngày kết thúc', dataIndex: 'ngayKetThucString', width: 180 },
     { title: 'Sửa', width: 60, render: () => <Button icon={<EditOutlined />} type="text" /> }
   ];
 
@@ -109,7 +151,7 @@ const AdminTaskManager = () => {
     <div style={{ padding: '24px', background: '#f5f7f9', minHeight: '100vh' }}>
       <Row gutter={24}>
         <Col span={6}>
-          <Card title={<b>Danh sách nhân sự</b>} styles={{ body: { padding: '0px' } }} loading={userLoading}>
+          <Card title={<b>Danh sách nhân sự</b>} style={{ body: { padding: '0px' } }} loading={userLoading}>
              <div style={{ padding: '12px', borderBottom: '1px solid #f0f0f0' }}>
               <Checkbox 
                 onChange={(e) => setSelectedUserIds(e.target.checked ? users.map(u => u.uuid) : [])}
@@ -136,11 +178,44 @@ const AdminTaskManager = () => {
         </Col>
 
         <Col span={18}>
+          <Card style={{ marginBottom: 16 }}>
+            <Form form={filterForm} layout="vertical">
+              <Row gutter={[16, 0]}>
+                <Col span={6}><Form.Item name="noiDungCongViec" label="Nội dung"><Input placeholder="Tìm nội dung..." allowClear /></Form.Item></Col>
+                <Col span={6}><Form.Item name="sanPhamId" label="Sản phẩm"><Select placeholder="Chọn sản phẩm" options={(products||[]).map(p=>({ value: p.id, label: p.ten }))} allowClear /></Form.Item></Col>
+                <Col span={6}><Form.Item name="loaiCongViecId" label="Loại CV"><Select placeholder="Chọn loại" options={(types||[]).map(t=>({ value: t.id, label: t.ten }))} allowClear /></Form.Item></Col>
+                <Col span={6}><Form.Item name="trangThaiId" label="Trạng thái"><Select placeholder="Chọn trạng thái" options={(statuses||[]).map(s=>({ value: s.id, label: s.ten }))} allowClear /></Form.Item></Col>
+                <Col span={8}><Form.Item name="rangeDate" label="Khoảng thời gian"><RangePicker format="DD-MM-YYYY" style={{ width: '100%' }} /></Form.Item></Col>
+                <Col span={4} style={{ display: 'flex', alignItems: 'flex-end', paddingBottom: '24px' }}>
+                  <Space>
+                    <Button type="primary" icon={<SearchOutlined />} onClick={() => {
+                      if (!selectedUserIds || selectedUserIds.length === 0) {
+                        message.warning('Bạn chưa chọn nhân sự nào!');
+                        return;
+                      }
+                      const values = filterForm.getFieldsValue();
+                      const filters = {
+                        ...values,
+                        ngayBatDau: values.rangeDate ? values.rangeDate[0].format('DD-MM-YYYY') : null,
+                        ngayKetThuc: values.rangeDate ? values.rangeDate[1].format('DD-MM-YYYY') : null,
+                      };
+                      delete filters.rangeDate;
+                      fetchTasks(1, pagination.pageSize, selectedUserIds, filters);
+                    }}>Tìm kiếm</Button>
+                    <Button icon={<ReloadOutlined />} onClick={() => { filterForm.resetFields(); fetchTasks(1, pagination.pageSize, selectedUserIds, {}); }}>Làm mới</Button>
+                  </Space>
+                </Col>
+              </Row>
+            </Form>
+          </Card>
+
           <Card 
             title={<b>Danh sách công việc</b>}
-            extra={<Button type="primary" icon={<PlusOutlined />} onClick={() => setIsGiaoViecOpen(true)}>Giao công việc</Button>}
+            extra={<div style={{ display: 'flex', gap: 8 }}>
+              <Button type="primary" icon={<PlusOutlined />} onClick={() => setIsGiaoViecOpen(true)}>Giao công việc</Button>
+            </div>}
           >
-            <Table columns={columns} dataSource={tasks} rowKey="uuid" loading={loading} pagination={{ current: pagination.current, total: pagination.total, onChange: (p) => fetchTasks(p) }} />
+            <Table columns={columns} dataSource={tasks} rowKey="uuid" loading={loading} pagination={{ current: pagination.current, total: pagination.total, onChange: (p) => fetchTasks(p, pagination.pageSize, selectedUserIds) }} />
           </Card>
         </Col>
       </Row>

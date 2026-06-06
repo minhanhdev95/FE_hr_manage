@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 
 // Import các Trang (Pages)
 import LoginPage from './pages/LoginPage';
-import DashboardPage from './pages/DashboardPage';
+import DashboardPage from './pages/AdminDashboardPage';
 import AdminTaskManager from './pages/AdminTaskManager';
 import TaskManager from './pages/TaskManager';
 import NotFoundPage from './pages/NotFoundPage';
@@ -24,9 +24,9 @@ function App() {
   return (
     <Router>
       <Routes>
-        // Login page
+        {/* Login page */}
         <Route path="/login" element={<LoginPage />} />
-        // Admin dashboard
+        {/* Admin dashboard */}
         <Route 
           path="/admin-dashboard" 
           element={
@@ -37,17 +37,17 @@ function App() {
             </PrivateRoute>
           } 
         />
-        // Admin task manager
-          <Route 
-            path="/admin-task-manager" 
-            element={
-              <PrivateRoute>
-                <MainLayout>
-                  <AdminTaskManager />
-                </MainLayout>
-              </PrivateRoute>
-            } 
-          />
+        {/* Admin task manager */}
+        <Route 
+          path="/admin-task-manager" 
+          element={
+            <PrivateRoute>
+              <MainLayout>
+                <AdminTaskManager />
+              </MainLayout>
+            </PrivateRoute>
+          } 
+        />
         {/* Trang Công việc cá nhân cho user */}
         <Route 
           path="/user-dashboard" 
@@ -59,8 +59,6 @@ function App() {
             </PrivateRoute>
           } 
         />
-
-        
 
         {/* Trang Công việc cá nhân */}
         <Route 
@@ -74,8 +72,8 @@ function App() {
           } 
         />
 
-        {/* 3. Điều hướng mặc định: Nếu vào trang chủ "/" thì đẩy sang Dashboard */}
-        <Route path="/" element={<Navigate to="/dashboard" />} />
+        {/* 3. Điều hướng mặc định: Nếu vào trang chủ "/" thì đẩy sang Admin Dashboard */}
+        {/* <Route path="/" element={<Navigate to="/admin-dashboard" />} /> */}
 
         {/* 4. Xử lý trang không tồn tại (404) */}
         <Route path="*" element={<NotFoundPage />} />

@@ -6,7 +6,7 @@ import { AppstoreOutlined, CheckCircleOutlined, SyncOutlined, UserOutlined, Sear
 import adminService from '../services/adminService';
 import dayjs from 'dayjs';
 
-const DashboardPage = () => {
+const AdminDashboardPage = () => {
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState([]);
   
@@ -181,4 +181,4 @@ const DashboardPage = () => {
   );
 };
 
-export default DashboardPage;
+export default AdminDashboardPage;
