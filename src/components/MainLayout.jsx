@@ -15,6 +15,7 @@ const MainLayout = ({ children }) => {
   const menuItems = [
     { key: '/admin-dashboard', icon: <PieChartOutlined />, label: 'Tổng quan' }, // màn tổng quan của admin
       { key: '/admin-task-manager', icon: <TeamOutlined />, label: 'Quản lý công việc' }, // mản quản lý công việc của admin
+      { key: '/admin-user-manager', icon: <UserOutlined />, label: 'Quản lý nhân sự' },
     { key: '/tasks', icon: <UserOutlined />, label: 'Công việc của tôi' },
     { 
       key: 'logout', 

@@ -5,6 +5,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/AdminDashboardPage';
 import AdminTaskManager from './pages/AdminTaskManager';
+import AdminUserManager from './pages/AdminUserManager';
 import TaskManager from './pages/TaskManager';
 import NotFoundPage from './pages/NotFoundPage';
 
@@ -44,6 +45,17 @@ function App() {
             <PrivateRoute>
               <MainLayout>
                 <AdminTaskManager />
+              </MainLayout>
+            </PrivateRoute>
+          } 
+        />
+        {/* Admin user manager */}
+        <Route 
+          path="/admin-user-manager" 
+          element={
+            <PrivateRoute>
+              <MainLayout>
+                <AdminUserManager />
               </MainLayout>
             </PrivateRoute>
           } 
