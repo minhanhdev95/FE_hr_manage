@@ -13,7 +13,14 @@ const LoginPage = () => {
     try {
       await authService.login(values.username, values.password);
       message.success('Đăng nhập thành công!');
-      navigate('/tasks'); // Chuyển hướng sang trang quản lý công việc
+
+      if (authService.isAdmin()) {
+        navigate('/admin-dashboard');
+      } else if (authService.isUser()) {
+        navigate('/user-dashboard');
+      } else {
+        navigate('/login');
+      }
     } catch (error) {
       message.error('Tài khoản hoặc mật khẩu không đúng!');
     } finally {

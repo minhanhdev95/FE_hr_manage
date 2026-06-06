@@ -1,17 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Row, Col, Statistic, DatePicker, Spin, message } from 'antd';
+import { Button, Card, Row, Col, Statistic, DatePicker, Spin, message } from 'antd';
 // Sử dụng các component BarChart của recharts
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, LabelList } from 'recharts';
-import { AppstoreOutlined, CheckCircleOutlined, SyncOutlined, UserOutlined } from '@ant-design/icons';
+import { AppstoreOutlined, CheckCircleOutlined, SyncOutlined, UserOutlined, SearchOutlined } from '@ant-design/icons';
 import adminService from '../services/adminService';
 import dayjs from 'dayjs';
 
-const DashboardPage = () => {
+const AdminDashboardPage = () => {
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState([]);
   
   // Giữ nguyên định dạng thời gian chuẩn MM-yyyy
   const [thoiGian, setThoiGian] = useState(dayjs().format('MM-YYYY'));
+  const [selectedThoiGian, setSelectedThoiGian] = useState(dayjs().format('MM-YYYY'));
 
   const fetchStats = async (monthStr) => {
     setLoading(true);
@@ -27,6 +28,14 @@ const DashboardPage = () => {
   useEffect(() => {
     fetchStats(thoiGian);
   }, [thoiGian]);
+
+  const handleSearch = () => {
+    if (selectedThoiGian !== thoiGian) {
+      setThoiGian(selectedThoiGian);
+    } else {
+      fetchStats(selectedThoiGian);
+    }
+  };
 
   // Logic tính toán summary cho các Card vẫn giữ nguyên (tổng tuyệt đối)
   const summary = data.reduce((acc, curr) => ({
@@ -62,14 +71,19 @@ const DashboardPage = () => {
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 24, alignItems: 'center' }}>
         <h2 style={{ margin: 0 }}>Hệ thống quản lý công việc</h2>
         
-        <DatePicker 
-          picker="month" 
-          format="MM-YYYY" 
-          allowClear={false}
-          value={dayjs(thoiGian, 'MM-YYYY')}
-          // Khi đổi tháng, format lại thành MM-YYYY để gọi API
-          onChange={(date) => setThoiGian(date ? date.format('MM-YYYY') : dayjs().format('MM-YYYY'))}
-        />
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+          <DatePicker 
+            picker="month" 
+            format="MM-YYYY" 
+            allowClear={false}
+            defaultPickerValue={dayjs()}
+            // Khi đổi tháng, chỉ cập nhật giá trị chọn. Chỉ bấm nút Tìm kiếm mới gọi API.
+            onChange={(date) => setSelectedThoiGian(date ? date.format('MM-YYYY') : dayjs().format('MM-YYYY'))}
+          />
+          <Button type="primary" icon={<SearchOutlined />} onClick={handleSearch}>
+            Tìm kiếm
+          </Button>
+        </div>
       </div>
 
       <Spin spinning={loading}>
@@ -145,8 +159,21 @@ const DashboardPage = () => {
           </div>
           
           {/* Legend giả lập tỉ lệ % ở dưới cùng cho người dùng dễ hình dung */}
-          <div style={{ textAlign: 'center', marginTop: 10, color: '#999', fontSize: '12px', paddingLeft: '160px' }}>
-             0% ————— 20% ————— 40% ————— 60% ————— 80% ————— 100%
+          <div style={{ width: 'calc(100% - 220px)', margin: '10px 0 0 160px', position: 'relative', display: 'flex', alignItems: 'center', height: 28 }}>
+            <div style={{ position: 'absolute', top: '50%', left: 0, right: 0, borderTop: '1px solid #999', transform: 'translateY(-50%)' }} />
+            <div style={{ position: 'relative', display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', color: '#999', fontSize: '12px' }}>
+              <span style={{ background: '#fff', padding: '0 4px', lineHeight: '1' }}>0%</span>
+              <span style={{ background: '#fff', padding: '0 4px', lineHeight: '1' }}>10%</span>
+              <span style={{ background: '#fff', padding: '0 4px', lineHeight: '1' }}>20%</span>
+              <span style={{ background: '#fff', padding: '0 4px', lineHeight: '1' }}>30%</span>
+              <span style={{ background: '#fff', padding: '0 4px', lineHeight: '1' }}>40%</span>
+              <span style={{ background: '#fff', padding: '0 4px', lineHeight: '1' }}>50%</span>
+              <span style={{ background: '#fff', padding: '0 4px', lineHeight: '1' }}>60%</span>
+              <span style={{ background: '#fff', padding: '0 4px', lineHeight: '1' }}>70%</span>
+              <span style={{ background: '#fff', padding: '0 4px', lineHeight: '1' }}>80%</span>
+              <span style={{ background: '#fff', padding: '0 4px', lineHeight: '1' }}>90%</span>
+              <span style={{ background: '#fff', padding: '0 4px', lineHeight: '1' }}>100%</span>
+            </div>
           </div>
         </Card>
       </Spin>
@@ -154,4 +181,4 @@ const DashboardPage = () => {
   );
 };
 
-export default DashboardPage;
+export default AdminDashboardPage;
