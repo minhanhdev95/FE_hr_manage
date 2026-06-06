@@ -200,7 +200,7 @@ const AdminTaskManager = () => {
                       delete filters.rangeDate;
                       fetchTasks(1, pagination.pageSize, selectedUserIds, filters);
                     }}>Tìm kiếm</Button>
-                    <Button icon={<ReloadOutlined />} onClick={() => { filterForm.resetFields(); fetchTasks(1, pagination.pageSize, selectedUserIds, {}); }}>Làm mới</Button>
+                    <Button icon={<ReloadOutlined />} onClick={() => { filterForm.resetFields() }}>Làm mới</Button>
                   </Space>
                 </Col>
               </Row>
