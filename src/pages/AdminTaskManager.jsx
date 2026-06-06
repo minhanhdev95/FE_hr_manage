@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Row, Col, Card, Checkbox, Table, Button, Tag, Space, Modal, Form, Input, Select, DatePicker, message, Avatar } from 'antd';
-import { EditOutlined, UserOutlined, PlusOutlined, SearchOutlined, ReloadOutlined } from '@ant-design/icons';
+import { EditOutlined, UserOutlined, PlusOutlined, SearchOutlined, ReloadOutlined, EyeOutlined, CheckCircleOutlined, CloseOutlined } from '@ant-design/icons';
 import adminService from '../services/adminService';
 import danhMucService from '../services/danhMucService';
 import dayjs from 'dayjs';
@@ -21,6 +21,65 @@ const AdminTaskManager = () => {
 
   const [isGiaoViecOpen, setIsGiaoViecOpen] = useState(false);
   const [giaoViecForm] = Form.useForm();
+  const [detailModalOpen, setDetailModalOpen] = useState(false);
+  const [selectedTask, setSelectedTask] = useState(null);
+
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [editTask, setEditTask] = useState(null);
+  const [editForm] = Form.useForm();
+  const [selectedTrangThaiId, setSelectedTrangThaiId] = useState(null);
+  const [editLoading, setEditLoading] = useState(false);
+
+  const handleViewTask = (task) => {
+    setSelectedTask(task);
+    setDetailModalOpen(true);
+  };
+
+  const handleCloseDetailModal = () => {
+    setDetailModalOpen(false);
+    setSelectedTask(null);
+  };
+
+  const getStatusByNameOrId = (name, fallbackId) => {
+    const found = statuses.find(s => s.ten === name || s.id === fallbackId);
+    return found ? found.id : fallbackId;
+  };
+
+  const handleOpenApproveModal = (task) => {
+    setEditTask(task);
+    // default to "Đã tiếp nhận" if available
+    const acceptedId = getStatusByNameOrId('Đã tiếp nhận', 2);
+    setSelectedTrangThaiId(acceptedId);
+    editForm.setFieldsValue({ trangThaiId: acceptedId });
+    setEditModalOpen(true);
+  };
+
+  const handleCloseApproveModal = () => {
+    setEditModalOpen(false);
+    setEditTask(null);
+    setSelectedTrangThaiId(null);
+    editForm.resetFields();
+  };
+
+  const handleSubmitApprove = async () => {
+    if (!editTask) return;
+    if (!selectedTrangThaiId) {
+      message.warning('Vui lòng chọn trạng thái');
+      return;
+    }
+    setEditLoading(true);
+    try {
+      await adminService.update({ uuid: editTask.uuid, trangThaiId: selectedTrangThaiId });
+      message.success('Cập nhật trạng thái thành công');
+      handleCloseApproveModal();
+      fetchTasks(pagination.current, pagination.pageSize, selectedUserIds);
+    } catch (err) {
+      console.error(err);
+      message.error('Cập nhật trạng thái thất bại');
+    } finally {
+      setEditLoading(false);
+    }
+  };
 
   useEffect(() => {
     const loadInitialData = async () => {
@@ -157,7 +216,15 @@ const AdminTaskManager = () => {
     { title: 'Trạng thái', dataIndex: 'trangThaiTen', render: (t, record) => <Tag {...getStatusTagProps(record.trangThaiId)}>{t}</Tag>, width: 140 },
     { title: 'Ngày bắt đầu', dataIndex: 'ngayBatDauString', width: 180 },
     { title: 'Ngày kết thúc', dataIndex: 'ngayKetThucString', width: 180 },
-    { title: 'Thao tác', width: 60, render: () => <Button icon={<EditOutlined />} type="text" /> }
+    { title: 'Thao tác', width: 100, fixed: 'right', render: (_, record) => {
+      const isPending = record.trangThaiTen === 'Chờ phê duyệt' || record.trangThaiId === 1;
+      return (
+        <Space>
+          {isPending && <Button icon={<EditOutlined />} type="text" onClick={() => handleOpenApproveModal(record)} />}
+          <Button icon={<EyeOutlined />} type="text" onClick={() => handleViewTask(record)} />
+        </Space>
+      );
+    } }
   ];
 
   return (
@@ -283,11 +350,102 @@ const AdminTaskManager = () => {
           </Row>
 
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '20px' }}>
-            <Button onClick={() => setIsGiaoViecOpen(false)}>Hủy</Button>
-            <Button onClick={() => handleGiaoViec(true)}>Giao và tạo tiếp</Button>
-            <Button type="primary" onClick={() => handleGiaoViec(false)}>Giao việc</Button>
+            <Button icon={<CloseOutlined />} onClick={() => setIsGiaoViecOpen(false)}>Hủy</Button>
+            {/* <Button onClick={() => handleGiaoViec(true)}>Giao và tạo tiếp</Button> */}
+            <Button type="primary" icon={<CheckCircleOutlined />} onClick={() => handleGiaoViec(false)}>Giao việc</Button>
           </div>
         </Form>
+      </Modal>
+
+        <Modal
+          title={<b>Phê duyệt công việc</b>}
+          open={editModalOpen}
+          onCancel={handleCloseApproveModal}
+          footer={[
+            <Button key="submit" type="primary" icon={<CheckCircleOutlined />} loading={editLoading} onClick={handleSubmitApprove}>Phê duyệt</Button>,
+            <Button key="cancel" icon={<CloseOutlined />} onClick={handleCloseApproveModal}>Đóng</Button>
+          ]}
+          width={600}
+        >
+          <Form form={editForm} layout="vertical">
+            <Form.Item label="Mã công việc">
+              <Input value={editTask?.maCongViec || ''} disabled />
+            </Form.Item>
+            <Form.Item label="Nhân sự">
+              <Input value={editTask?.nhanSuHoVaTen || ''} disabled />
+            </Form.Item>
+            <Form.Item name="trangThaiId" label="Trạng thái">
+              <Select value={selectedTrangThaiId} onChange={(v) => setSelectedTrangThaiId(v)}>
+                {(statuses || []).filter(s => s.ten === 'Đã tiếp nhận' || s.ten === 'Từ chối' || s.id === 2 || s.id === 3).map(s => (
+                  <Select.Option key={s.id} value={s.id}>{s.ten}</Select.Option>
+                ))}
+                {/* Fallback options if danhMuc not loaded */}
+                {!(statuses || []).some(s => s.id === 2) && <Select.Option value={2}>Đã tiếp nhận</Select.Option>}
+                {!(statuses || []).some(s => s.id === 3) && <Select.Option value={3}>Từ chối</Select.Option>}
+              </Select>
+            </Form.Item>
+            <Form.Item label="Nội dung công việc">
+              <TextArea rows={3} value={editTask?.noiDungCongViec || ''} disabled />
+            </Form.Item>
+          </Form>
+        </Modal>
+
+      <Modal
+        title={<b>Chi tiết công việc</b>}
+        open={detailModalOpen}
+        onCancel={handleCloseDetailModal}
+        footer={<Button onClick={handleCloseDetailModal} icon={<CloseOutlined />}>Đóng</Button>}
+        width={700}
+      >
+        {selectedTask && (
+          <Form layout="vertical">
+            <Form.Item label="Mã CV">
+              <Input value={selectedTask.maCongViec || ''} disabled />
+            </Form.Item>
+            <Form.Item label="Nhân sự">
+              <Input value={selectedTask.nhanSuHoVaTen || ''} disabled />
+            </Form.Item>
+            <Form.Item label="Nội dung công việc">
+              <TextArea rows={4} value={selectedTask.noiDungCongViec || ''} disabled />
+            </Form.Item>
+            <Row gutter={16}>
+              <Col span={12}>
+                <Form.Item label="Loại công việc">
+                  <Input value={selectedTask.loaiCongViecTen || ''} disabled />
+                </Form.Item>
+              </Col>
+              <Col span={12}>
+                <Form.Item label="Sản phẩm">
+                  <Input value={selectedTask.sanPhamTen || ''} disabled />
+                </Form.Item>
+              </Col>
+            </Row>
+            <Row gutter={16}>
+              <Col span={12}>
+                <Form.Item label="Nỗ lực">
+                  <Input value={selectedTask.noLucThucHien || ''} disabled />
+                </Form.Item>
+              </Col>
+              <Col span={12}>
+                <Form.Item label="Trạng thái">
+                  <Input value={selectedTask.trangThaiTen || ''} disabled />
+                </Form.Item>
+              </Col>
+            </Row>
+            <Row gutter={16}>
+              <Col span={12}>
+                <Form.Item label="Ngày bắt đầu">
+                  <DatePicker value={selectedTask.ngayBatDauString ? dayjs(selectedTask.ngayBatDauString, 'DD-MM-YYYY') : null} disabled style={{ width: '100%' }} format="DD/MM/YYYY" />
+                </Form.Item>
+              </Col>
+              <Col span={12}>
+                <Form.Item label="Ngày kết thúc">
+                  <DatePicker value={selectedTask.ngayKetThucString ? dayjs(selectedTask.ngayKetThucString, 'DD-MM-YYYY') : null} disabled style={{ width: '100%' }} format="DD/MM/YYYY" />
+                </Form.Item>
+              </Col>
+            </Row>
+          </Form>
+        )}
       </Modal>
 
       <style>{`
