@@ -17,6 +17,7 @@ const AdminTaskManager = () => {
   const [selectedUserIds, setSelectedUserIds] = useState([]);
   const [loading, setLoading] = useState(false);
   const [userLoading, setUserLoading] = useState(false);
+  const [lastFilters, setLastFilters] = useState({});
   const [pagination, setPagination] = useState({ current: 1, pageSize: 10, total: 0 });
 
   const [isGiaoViecOpen, setIsGiaoViecOpen] = useState(false);
@@ -72,7 +73,16 @@ const AdminTaskManager = () => {
       await adminService.update({ uuid: editTask.uuid, trangThaiId: selectedTrangThaiId });
       message.success('Cập nhật trạng thái thành công');
       handleCloseApproveModal();
-      fetchTasks(pagination.current, pagination.pageSize, selectedUserIds);
+      // build filters from current filter form so we always re-run the current search
+      const currentValues = filterForm.getFieldsValue();
+      const currentFilters = {
+        ...currentValues,
+        ngayBatDau: currentValues.rangeDate ? currentValues.rangeDate[0].format('DD-MM-YYYY') : null,
+        ngayKetThuc: currentValues.rangeDate ? currentValues.rangeDate[1].format('DD-MM-YYYY') : null,
+      };
+      delete currentFilters.rangeDate;
+      setLastFilters(currentFilters);
+      fetchTasks(pagination.current, pagination.pageSize, selectedUserIds, currentFilters);
     } catch (err) {
       console.error(err);
       message.error('Cập nhật trạng thái thất bại');
@@ -174,16 +184,25 @@ const AdminTaskManager = () => {
       setLoading(true);
       const res = await adminService.insertCongViec(payload);
       console.log(">>> Kết quả API:", res);
-      
-      message.success("Đã giao công việc thành công!");
+      message.success('Đã giao công việc thành công!');
+      // build filters from current filter form so we always re-run the current search
+      const currentValues = filterForm.getFieldsValue();
+      const currentFilters = {
+        ...currentValues,
+        ngayBatDau: currentValues.rangeDate ? currentValues.rangeDate[0].format('DD-MM-YYYY') : null,
+        ngayKetThuc: currentValues.rangeDate ? currentValues.rangeDate[1].format('DD-MM-YYYY') : null,
+      };
+      delete currentFilters.rangeDate;
+      setLastFilters(currentFilters);
 
       if (isCreateMore) {
         giaoViecForm.setFieldsValue({ noiDungCongViec: '' });
       } else {
         setIsGiaoViecOpen(false);
         giaoViecForm.resetFields();
-        fetchTasks(pagination.current);
       }
+
+      fetchTasks(pagination.current, pagination.pageSize, selectedUserIds, currentFilters);
     } catch (err) {
       console.error(err);
       message.error("Lỗi khi gọi API insertCongViec. Kiểm tra Network.");
@@ -282,6 +301,7 @@ const AdminTaskManager = () => {
                         ngayKetThuc: values.rangeDate ? values.rangeDate[1].format('DD-MM-YYYY') : null,
                       };
                       delete filters.rangeDate;
+                      setLastFilters(filters);
                       fetchTasks(1, pagination.pageSize, selectedUserIds, filters);
                     }}>Tìm kiếm</Button>
                     <Button icon={<ReloadOutlined />} onClick={() => { filterForm.resetFields() }}>Làm mới</Button>
