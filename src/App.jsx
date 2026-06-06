@@ -6,6 +6,7 @@ import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
 import AdminTaskManager from './pages/AdminTaskManager';
 import TaskManager from './pages/TaskManager';
+import NotFoundPage from './pages/NotFoundPage';
 
 // Import Bố cục chung (Layout)
 import MainLayout from './components/MainLayout';
@@ -28,9 +29,9 @@ function App() {
 
         {/* 2. Các trang nghiệp vụ: Cần Login và có Sidebar (MainLayout) */}
         
-        {/* Trang Tổng quan (Biểu đồ) */}
+        {/* Trang Tổng quan (Biểu đồ) của admin*/}
         <Route 
-          path="/dashboard" 
+          path="/admin-dashboard" 
           element={
             <PrivateRoute>
               <MainLayout>
@@ -40,9 +41,33 @@ function App() {
           } 
         />
 
+        {/* Alias để truy cập mặc định vào trang Dashboard */}
+        {/* <Route 
+          path="/dashboard" 
+          element={
+            <PrivateRoute>
+              <MainLayout>
+                <DashboardPage />
+              </MainLayout>
+            </PrivateRoute>
+          } 
+        /> */}
+
+        {/* Trang Công việc cá nhân cho user */}
+        <Route 
+          path="/user-dashboard" 
+          element={
+            <PrivateRoute>
+              <MainLayout>
+                <TaskManager />
+              </MainLayout>
+            </PrivateRoute>
+          } 
+        />
+
         {/* Trang Quản lý công việc nhân sự (Dành cho Admin) */}
         <Route 
-          path="/admin/tasks" 
+          path="/admin-tasks" 
           element={
             <PrivateRoute>
               <MainLayout>
@@ -67,8 +92,8 @@ function App() {
         {/* 3. Điều hướng mặc định: Nếu vào trang chủ "/" thì đẩy sang Dashboard */}
         <Route path="/" element={<Navigate to="/dashboard" />} />
 
-        {/* 4. Xử lý trang không tồn tại (404) - Tùy chọn */}
-        <Route path="*" element={<Navigate to="/dashboard" />} />
+        {/* 4. Xử lý trang không tồn tại (404) */}
+        <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </Router>
   );

@@ -10,8 +10,8 @@ const MainLayout = ({ children }) => {
   const location = useLocation();
 
   const menuItems = [
-    { key: '/dashboard', icon: <PieChartOutlined />, label: 'Tổng quan' },
-    { key: '/admin/tasks', icon: <TeamOutlined />, label: 'Công việc nhân sự' },
+    { key: '/admin-dashboard', icon: <PieChartOutlined />, label: 'Tổng quan' }, // màn tổng quan của admin
+    { key: '/admin-tasks', icon: <TeamOutlined />, label: 'Quản lý công việc' }, // mản quản lý công việc của admin
     { key: '/tasks', icon: <UserOutlined />, label: 'Công việc của tôi' },
     { 
       key: 'logout', 
