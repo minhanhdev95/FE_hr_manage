@@ -255,16 +255,16 @@ const TaskManager = () => {
     loaiCongViecId:
       record.loaiCongViecId != null ? Number(record.loaiCongViecId) : null,
     noLucThucHien: record.noLucThucHien,
-    ngayBatDau:
-      record.ngayBatDauString ||
-      (record.ngayBatDau
-        ? dayjs(record.ngayBatDau).format("DD-MM-YYYY")
-        : null),
-    ngayKetThuc:
-      record.ngayKetThucString ||
-      (record.ngayKetThuc
-        ? dayjs(record.ngayKetThuc).format("DD-MM-YYYY")
-        : null),
+    // ngayBatDau:
+    //   record.ngayBatDauString ||
+    //   (record.ngayBatDau
+    //     ? dayjs(record.ngayBatDau).format("DD-MM-YYYY")
+    //     : null),
+    // ngayKetThuc:
+    //   record.ngayKetThucString ||
+    //   (record.ngayKetThuc
+    //     ? dayjs(record.ngayKetThuc).format("DD-MM-YYYY")
+    //     : null),
     trangThaiId: Number(record.trangThaiId),
     ...overrides,
   });
@@ -573,7 +573,7 @@ const TaskManager = () => {
           <Row gutter={16}>
             <Col span={12}>
               <Form.Item name="maCongViec" label="Mã công việc">
-                <Input placeholder="Nhập mã..." />
+                <Input placeholder="" disabled />
               </Form.Item>
             </Col>
             <Col span={12}>
