@@ -1,31 +1,52 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { Card, Row, Col, Statistic, DatePicker, Button, Spin, Empty, message } from 'antd';
+import React, { useState, useEffect, useMemo } from "react";
 import {
-  PieChart, Pie, Cell, Tooltip as RechartsTooltip, ResponsiveContainer,
-} from 'recharts';
+  Card,
+  Row,
+  Col,
+  Statistic,
+  DatePicker,
+  Button,
+  Spin,
+  Empty,
+  message,
+} from "antd";
 import {
-  AppstoreOutlined, CheckCircleOutlined, ClockCircleOutlined, SearchOutlined,
-} from '@ant-design/icons';
-import dayjs from 'dayjs';
-import taskService from '../services/taskService';
+  PieChart,
+  Pie,
+  Cell,
+  Tooltip as RechartsTooltip,
+  ResponsiveContainer,
+} from "recharts";
 import {
-  classifyTrangThai, TRANG_THAI, TRANG_THAI_COLOR, TRANG_THAI_LABEL,
-} from '../utils/trangThaiCongViec';
+  AppstoreOutlined,
+  CheckCircleOutlined,
+  ClockCircleOutlined,
+  SearchOutlined,
+} from "@ant-design/icons";
+import dayjs from "dayjs";
+import taskService from "../services/taskService";
+import {
+  classifyTrangThai,
+  TRANG_THAI,
+  TRANG_THAI_COLOR,
+  TRANG_THAI_LABEL,
+} from "../utils/trangThaiCongViec";
 
 // Định dạng gửi lên BE (đồng bộ với /tong-quan-du-an đang dùng MM-YYYY).
-const THOI_GIAN_API_FORMAT = 'MM-YYYY';
+const THOI_GIAN_API_FORMAT = "MM-YYYY";
 // Định dạng hiển thị trên giao diện.
-const THOI_GIAN_HIEN_THI = 'MM/YYYY';
+const THOI_GIAN_HIEN_THI = "MM/YYYY";
 
 // Lấy số đầu tiên hợp lệ trong danh sách giá trị.
 const num = (...vals) => {
   for (const v of vals) {
-    if (v !== undefined && v !== null && v !== '' && !Number.isNaN(Number(v))) return Number(v);
+    if (v !== undefined && v !== null && v !== "" && !Number.isNaN(Number(v)))
+      return Number(v);
   }
   return 0;
 };
 
-const asObject = (raw) => (Array.isArray(raw) ? (raw[0] || {}) : (raw || {}));
+const asObject = (raw) => (Array.isArray(raw) ? raw[0] || {} : raw || {});
 
 // Chuẩn hoá nhiều khả năng shape trả về từ API /get-tien-do thành số lượng theo lớp trạng thái.
 const buildCounts = (raw) => {
@@ -40,13 +61,23 @@ const buildCounts = (raw) => {
 
   // Shape 1: mảng breakdown [{ trangThaiTen, soLuong }, ...]
   const arr = Array.isArray(raw) ? raw : null;
-  const looksLikeBreakdown = arr && arr.length > 0 &&
-    (arr[0].trangThaiTen !== undefined || arr[0].ten !== undefined || arr[0].trangThai !== undefined);
+  const looksLikeBreakdown =
+    arr &&
+    arr.length > 0 &&
+    (arr[0].trangThaiTen !== undefined ||
+      arr[0].ten !== undefined ||
+      arr[0].trangThai !== undefined);
   if (looksLikeBreakdown) {
     arr.forEach((r) => {
       const cls = classifyTrangThai(r.trangThaiTen ?? r.ten ?? r.trangThai);
       if (counts[cls] !== undefined) {
-        counts[cls] += num(r.soLuong, r.count, r.soLuongCongViec, r.tongSoCongViec, r.value);
+        counts[cls] += num(
+          r.soLuong,
+          r.count,
+          r.soLuongCongViec,
+          r.tongSoCongViec,
+          r.value,
+        );
       }
     });
     return counts;
@@ -54,10 +85,31 @@ const buildCounts = (raw) => {
 
   // Shape 2: object tổng hợp (hoặc mảng 1 phần tử tổng hợp).
   const o = asObject(raw);
-  counts[TRANG_THAI.DA_HOAN_THANH] = num(o.daHoanThanh, o.hoanThanh, o.soCongViecHoanThanh, o.soDaHoanThanh);
-  counts[TRANG_THAI.DANG_THUC_HIEN] = num(o.dangThucHien, o.dangLam, o.soCongViecDangThucHien, o.soDangThucHien);
-  counts[TRANG_THAI.DA_TIEP_NHAN] = num(o.daTiepNhan, o.tiepNhan, o.daPheDuyet, o.soCongViecDaTiepNhan, o.soDaTiepNhan);
-  counts[TRANG_THAI.CHO_PHE_DUYET] = num(o.choPheDuyet, o.choDuyet, o.soCongViecChoPheDuyet, o.soChoPheDuyet);
+  counts[TRANG_THAI.DA_HOAN_THANH] = num(
+    o.daHoanThanh,
+    o.hoanThanh,
+    o.soCongViecHoanThanh,
+    o.soDaHoanThanh,
+  );
+  counts[TRANG_THAI.DANG_THUC_HIEN] = num(
+    o.dangThucHien,
+    o.dangLam,
+    o.soCongViecDangThucHien,
+    o.soDangThucHien,
+  );
+  counts[TRANG_THAI.DA_TIEP_NHAN] = num(
+    o.daTiepNhan,
+    o.tiepNhan,
+    o.daPheDuyet,
+    o.soCongViecDaTiepNhan,
+    o.soDaTiepNhan,
+  );
+  counts[TRANG_THAI.CHO_PHE_DUYET] = num(
+    o.choPheDuyet,
+    o.choDuyet,
+    o.soCongViecChoPheDuyet,
+    o.soChoPheDuyet,
+  );
   counts[TRANG_THAI.TU_CHOI] = num(o.tuChoi, o.soCongViecTuChoi, o.soTuChoi);
   return counts;
 };
@@ -77,7 +129,7 @@ const TienDoCongViec = () => {
       // console.log('[get-tien-do] response:', res.data);
       setRaw(res.data);
     } catch (e) {
-      message.error('Không thể tải dữ liệu tiến độ công việc');
+      message.error("Không thể tải dữ liệu tiến độ công việc");
       setRaw(null);
     } finally {
       setLoading(false);
@@ -104,12 +156,19 @@ const TienDoCongViec = () => {
 
   const completed = useMemo(() => {
     const o = asObject(raw);
-    return num(o.daHoanThanh, o.hoanThanh, o.soCongViecHoanThanh) || counts[TRANG_THAI.DA_HOAN_THANH];
+    return (
+      num(o.daHoanThanh, o.hoanThanh, o.soCongViecHoanThanh) ||
+      counts[TRANG_THAI.DA_HOAN_THANH]
+    );
   }, [raw, counts]);
 
   const notCompleted = useMemo(() => {
     const o = asObject(raw);
-    const explicit = num(o.chuaHoanThanh, o.soChuaHoanThanh, o.soCongViecChuaHoanThanh);
+    const explicit = num(
+      o.chuaHoanThanh,
+      o.soChuaHoanThanh,
+      o.soCongViecChuaHoanThanh,
+    );
     return explicit || Math.max(total - completed, 0);
   }, [raw, total, completed]);
 
@@ -123,7 +182,12 @@ const TienDoCongViec = () => {
       TRANG_THAI.TU_CHOI,
     ];
     return order
-      .map((k) => ({ key: k, name: TRANG_THAI_LABEL[k], value: counts[k] || 0, color: TRANG_THAI_COLOR[k] }))
+      .map((k) => ({
+        key: k,
+        name: TRANG_THAI_LABEL[k],
+        value: counts[k] || 0,
+        color: TRANG_THAI_COLOR[k],
+      }))
       .filter((d) => d.value > 0);
   }, [counts]);
 
@@ -134,19 +198,43 @@ const TienDoCongViec = () => {
     const item = payload[0].payload;
     const percent = total > 0 ? Math.round((item.value / total) * 100) : 0;
     return (
-      <div style={{ background: '#fff', border: '1px solid #eee', padding: '6px 10px', borderRadius: 6, boxShadow: '0 2px 8px rgba(0,0,0,0.12)' }}>
-        <span style={{ display: 'inline-block', width: 8, height: 8, borderRadius: 2, background: item.color, marginRight: 6 }} />
+      <div
+        style={{
+          background: "#fff",
+          border: "1px solid #eee",
+          padding: "6px 10px",
+          borderRadius: 6,
+          boxShadow: "0 2px 8px rgba(0,0,0,0.12)",
+        }}
+      >
+        <span
+          style={{
+            display: "inline-block",
+            width: 8,
+            height: 8,
+            borderRadius: 2,
+            background: item.color,
+            marginRight: 6,
+          }}
+        />
         <b>{item.name}</b>: {item.value} ({percent}%)
       </div>
     );
   };
 
   return (
-    <div style={{ padding: '24px', background: '#f5f7f9', minHeight: '100vh' }}>
+    <div style={{ padding: "24px", background: "#f5f7f9", minHeight: "100vh" }}>
       {/* Tiêu đề + bộ chọn tháng */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginBottom: 24,
+        }}
+      >
         <h2 style={{ margin: 0 }}>Tiến độ công việc</h2>
-        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
           <DatePicker
             picker="month"
             format={THOI_GIAN_HIEN_THI}
@@ -154,7 +242,13 @@ const TienDoCongViec = () => {
             allowClear={false}
             onChange={(date) => setSelectedMonth(date || dayjs())}
           />
-          <Button type="primary" icon={<SearchOutlined />} onClick={handleSearch}>Tìm kiếm</Button>
+          <Button
+            type="primary"
+            icon={<SearchOutlined />}
+            onClick={handleSearch}
+          >
+            Tìm kiếm
+          </Button>
         </div>
       </div>
 
@@ -163,28 +257,44 @@ const TienDoCongViec = () => {
         <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
           <Col xs={24} sm={8}>
             <Card variant="borderless">
-              <Statistic title="Tổng công việc" value={total} prefix={<AppstoreOutlined />} />
+              <Statistic
+                title="Tổng công việc"
+                value={total}
+                prefix={<AppstoreOutlined />}
+              />
             </Card>
           </Col>
           <Col xs={24} sm={8}>
             <Card variant="borderless">
-              <Statistic title="Công việc đã hoàn thành" value={completed} valueStyle={{ color: '#3f8600' }} prefix={<CheckCircleOutlined />} />
+              <Statistic
+                title="Công việc đã hoàn thành"
+                value={completed}
+                valueStyle={{ color: "#3f8600" }}
+                prefix={<CheckCircleOutlined />}
+              />
             </Card>
           </Col>
           <Col xs={24} sm={8}>
             <Card variant="borderless">
-              <Statistic title="Công việc chưa hoàn thành" value={notCompleted} valueStyle={{ color: '#cf1322' }} prefix={<ClockCircleOutlined />} />
+              <Statistic
+                title="Công việc chưa hoàn thành"
+                value={notCompleted}
+                valueStyle={{ color: "#cf1322" }}
+                prefix={<ClockCircleOutlined />}
+              />
             </Card>
           </Col>
         </Row>
 
         {/* Biểu đồ tiến độ (donut) */}
         <Row justify="end">
-          <Col xs={24} md={14} lg={12}>
+          <Col xs={24} md={24} lg={24}>
             <Card title={<b>Tiến độ công việc</b>} variant="borderless">
               {hasChartData ? (
                 <>
-                  <div style={{ position: 'relative', width: '100%', height: 320 }}>
+                  <div
+                    style={{ position: "relative", width: "100%", height: 320 }}
+                  >
                     <ResponsiveContainer>
                       <PieChart>
                         <Pie
@@ -206,26 +316,63 @@ const TienDoCongViec = () => {
                       </PieChart>
                     </ResponsiveContainer>
                     {/* Nhãn tháng ở giữa donut */}
-                    <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' }}>
-                      <span style={{ fontSize: 26, fontWeight: 700, color: '#333' }}>
+                    <div
+                      style={{
+                        position: "absolute",
+                        inset: 0,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        pointerEvents: "none",
+                      }}
+                    >
+                      <span
+                        style={{ fontSize: 26, fontWeight: 700, color: "#333" }}
+                      >
                         {appliedMonth.format(THOI_GIAN_HIEN_THI)}
                       </span>
                     </div>
                   </div>
 
                   {/* Chú thích (legend) tuỳ chỉnh kèm số lượng */}
-                  <div style={{ display: 'flex', gap: 24, justifyContent: 'center', flexWrap: 'wrap', marginTop: 12 }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      gap: 24,
+                      justifyContent: "center",
+                      flexWrap: "wrap",
+                      marginTop: 12,
+                    }}
+                  >
                     {pieData.map((d) => (
-                      <span key={d.key} style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-                        <span style={{ width: 10, height: 10, borderRadius: 2, background: d.color, display: 'inline-block' }} />
-                        <span style={{ color: '#595959' }}>{d.name}</span>
+                      <span
+                        key={d.key}
+                        style={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: 6,
+                        }}
+                      >
+                        <span
+                          style={{
+                            width: 10,
+                            height: 10,
+                            borderRadius: 2,
+                            background: d.color,
+                            display: "inline-block",
+                          }}
+                        />
+                        <span style={{ color: "#595959" }}>{d.name}</span>
                         <b>{d.value}</b>
                       </span>
                     ))}
                   </div>
                 </>
               ) : (
-                <Empty description="Không có dữ liệu công việc trong tháng" style={{ padding: '48px 0' }} />
+                <Empty
+                  description="Không có dữ liệu công việc trong tháng"
+                  style={{ padding: "48px 0" }}
+                />
               )}
             </Card>
           </Col>

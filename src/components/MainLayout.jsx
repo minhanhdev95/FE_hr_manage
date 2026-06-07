@@ -77,7 +77,7 @@ const MainLayout = ({ children }) => {
           <div
             style={{ color: "white", fontSize: 25, fontWeight: "semi-bold" }}
           >
-            HỆ THỐNG QUẢN LÝ NHÂN SỰ
+            HỆ THỐNG QUẢN LÝ CÔNG VIỆC
           </div>
           <div>
             {(() => {
