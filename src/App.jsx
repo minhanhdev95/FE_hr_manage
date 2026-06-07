@@ -1,24 +1,30 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import React from "react";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
 
 // Import các Trang (Pages)
-import LoginPage from './pages/LoginPage';
-import DashboardPage from './pages/AdminDashboardPage';
-import AdminTaskManager from './pages/AdminTaskManager';
-import AdminUserManager from './pages/AdminUserManager';
-import TaskManager from './pages/TaskManager';
-import TienDoCongViec from './pages/TienDoCongViec';
-import NotFoundPage from './pages/NotFoundPage';
+import LoginPage from "./pages/LoginPage";
+import DashboardPage from "./pages/AdminDashboardPage";
+import AdminTaskManager from "./pages/AdminTaskManager";
+import AdminUserManager from "./pages/AdminUserManager";
+import AdminCategoryManager from "./pages/AdminCategoryManager";
+import TaskManager from "./pages/TaskManager";
+import TienDoCongViec from "./pages/TienDoCongViec";
+import NotFoundPage from "./pages/NotFoundPage";
 
 // Import Bố cục chung (Layout)
-import MainLayout from './components/MainLayout';
+import MainLayout from "./components/MainLayout";
 
 /**
  * Component bảo vệ đường dẫn
  * Nếu không có token trong localStorage, tự động sút về trang login
  */
 const PrivateRoute = ({ children }) => {
-  const token = localStorage.getItem('token');
+  const token = localStorage.getItem("token");
   return token ? children : <Navigate to="/login" />;
 };
 
@@ -29,48 +35,59 @@ function App() {
         {/* Login page */}
         <Route path="/login" element={<LoginPage />} />
         {/* Admin dashboard */}
-        <Route 
-          path="/admin-dashboard" 
+        <Route
+          path="/admin-dashboard"
           element={
             <PrivateRoute>
               <MainLayout>
                 <DashboardPage />
               </MainLayout>
             </PrivateRoute>
-          } 
+          }
         />
         {/* Admin task manager */}
-        <Route 
-          path="/admin-task-manager" 
+        <Route
+          path="/admin-task-manager"
           element={
             <PrivateRoute>
               <MainLayout>
                 <AdminTaskManager />
               </MainLayout>
             </PrivateRoute>
-          } 
+          }
         />
         {/* Admin user manager */}
-        <Route 
-          path="/admin-user-manager" 
+        <Route
+          path="/admin-user-manager"
           element={
             <PrivateRoute>
               <MainLayout>
                 <AdminUserManager />
               </MainLayout>
             </PrivateRoute>
-          } 
+          }
+        />
+        {/* Admin category manager */}
+        <Route
+          path="/admin-category-manager"
+          element={
+            <PrivateRoute>
+              <MainLayout>
+                <AdminCategoryManager />
+              </MainLayout>
+            </PrivateRoute>
+          }
         />
         {/* Trang Công việc cá nhân cho user */}
-        <Route 
-          path="/user-dashboard" 
+        <Route
+          path="/user-dashboard"
           element={
             <PrivateRoute>
               <MainLayout>
                 <TaskManager />
               </MainLayout>
             </PrivateRoute>
-          } 
+          }
         />
 
         {/* Trang Tiến độ công việc của nhân sự */}
@@ -94,7 +111,7 @@ function App() {
                 <TaskManager />
               </MainLayout>
             </PrivateRoute>
-          } 
+          }
         />
 
         {/* 3. Điều hướng mặc định: Nếu vào trang chủ "/" thì đẩy sang Admin Dashboard */}

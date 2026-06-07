@@ -33,6 +33,9 @@ const AdminUserManager = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalForm] = Form.useForm();
   const [submitting, setSubmitting] = useState(false);
+  const [editingUser, setEditingUser] = useState(null);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const [detailUser, setDetailUser] = useState(null);
 
   const loadUsers = async (params = {}) => {
     setLoading(true);
@@ -101,17 +104,94 @@ const AdminUserManager = () => {
   const handleAddPersonnel = async (values) => {
     setSubmitting(true);
     try {
-      await adminService.themNhanSu(values);
-      message.success("Thêm nhân sự thành công!");
+      if (editingUser) {
+        const payload = {
+          id: editingUser.id || editingUser.uuid || null,
+          hoTen: values.hoTen,
+          maDinhDanh: values.maDinhDanh,
+          gioiTinhId: values.gioiTinhId,
+          danTocId: values.danTocId,
+          email: editingUser.email,
+          userName: editingUser.userName,
+          roleName: editingUser.roleName,
+          ghiChu: values.ghiChu,
+        };
+        await adminService.capNhatNhanSu(payload);
+        message.success("Cập nhật nhân sự thành công!");
+      } else {
+        await adminService.themNhanSu(values);
+        message.success("Thêm nhân sự thành công!");
+      }
       setIsModalOpen(false);
       modalForm.resetFields();
+      setEditingUser(null);
       loadUsers();
     } catch (err) {
       console.error(err);
-      message.error("Lỗi thêm nhân sự");
+      message.error(editingUser ? "Lỗi cập nhật nhân sự" : "Lỗi thêm nhân sự");
     } finally {
       setSubmitting(false);
     }
+  };
+
+  const openEditModal = (record) => {
+    setEditingUser(record);
+    modalForm.setFieldsValue({
+      hoTen: record.hoTen,
+      maDinhDanh: record.maDinhDanh,
+      gioiTinhId: record.gioiTinhId,
+      danTocId: record.danTocId,
+      email: record.email,
+      userName: record.userName,
+      roleName: record.roleName,
+      ghiChu: record.ghiChu,
+    });
+    setIsModalOpen(true);
+  };
+
+  const openDetailModal = (record) => {
+    setDetailUser(record);
+    setIsDetailModalOpen(true);
+  };
+
+  const closeDetailModal = () => {
+    setIsDetailModalOpen(false);
+    setDetailUser(null);
+  };
+
+  const handleDeleteUser = (record) => {
+    if (record && record.roleName === "ADMIN") {
+      message.error("Không được xoá tài khoản ROLE_ADMIN");
+      return;
+    }
+
+    Modal.confirm({
+      title: "Xác nhận xoá",
+      content: `Bạn có chắc muốn xoá nhân sự "${record.hoTen || record.userName || ""}"?`,
+      okText: "Xoá",
+      okType: "danger",
+      cancelText: "Hủy",
+      onOk: async () => {
+        try {
+          setLoading(true);
+          const payload = record.uuid
+            ? {
+                uuid: record.uuid,
+                email: record.email,
+                userName: record.userName,
+              }
+            : { id: record.id, email: record.email, userName: record.userName };
+          await adminService.xoaNhanSu(payload);
+          message.success("Xoá nhân sự thành công!");
+          loadUsers();
+        } catch (err) {
+          console.error(err);
+          message.error("Lỗi khi xoá nhân sự");
+        } finally {
+          setLoading(false);
+        }
+      },
+    });
   };
 
   if (!authService.isAdmin()) {
@@ -136,11 +216,31 @@ const AdminUserManager = () => {
       render: (_, record) => {
         return (
           <Space>
-            <Button icon={<EditOutlined />} type="text" />
-            <Button icon={<EyeOutlined />} type="text" />
             <Button
-              icon={<DeleteOutlined style={{ color: "red" }} />}
+              icon={<EditOutlined />}
               type="text"
+              onClick={() => openEditModal(record)}
+              disabled={record.roleName === "ADMIN"}
+            />
+            <Button
+              icon={<EyeOutlined />}
+              type="text"
+              onClick={() => openDetailModal(record)}
+            />
+            <Button
+              icon={
+                <DeleteOutlined
+                  style={record.roleName === "ADMIN" ? {} : { color: "red" }}
+                />
+              }
+              type="text"
+              disabled={record.roleName === "ADMIN"}
+              title={
+                record.roleName === "ADMIN"
+                  ? "Không thể xoá tài khoản Admin"
+                  : undefined
+              }
+              onClick={() => handleDeleteUser(record)}
             />
           </Space>
         );
@@ -249,7 +349,11 @@ const AdminUserManager = () => {
                 <Button
                   type="primary"
                   icon={<PlusOutlined />}
-                  onClick={() => setIsModalOpen(true)}
+                  onClick={() => {
+                    setEditingUser(null);
+                    modalForm.resetFields();
+                    setIsModalOpen(true);
+                  }}
                 >
                   Thêm nhân sự
                 </Button>
@@ -268,12 +372,15 @@ const AdminUserManager = () => {
       </Row>
 
       <Modal
-        title="Thêm nhân sự"
+        title={
+          editingUser ? "Sửa thông tin nhân sự" : "Thêm mới thông tin nhân sự"
+        }
         open={isModalOpen}
         onOk={() => modalForm.submit()}
         onCancel={() => {
           setIsModalOpen(false);
           modalForm.resetFields();
+          setEditingUser(null);
         }}
         confirmLoading={submitting}
         width={600}
@@ -331,7 +438,7 @@ const AdminUserManager = () => {
               { type: "email", message: "Email không hợp lệ!" },
             ]}
           >
-            <Input placeholder="Nhập email" />
+            <Input placeholder="Nhập email" disabled={!!editingUser} />
           </Form.Item>
 
           <Form.Item
@@ -339,7 +446,7 @@ const AdminUserManager = () => {
             label="Username"
             rules={[{ required: true, message: "Vui lòng nhập username!" }]}
           >
-            <Input placeholder="Nhập username" />
+            <Input placeholder="Nhập username" disabled={!!editingUser} />
           </Form.Item>
 
           <Form.Item
@@ -347,7 +454,7 @@ const AdminUserManager = () => {
             label="Quyền"
             rules={[{ required: true, message: "Vui lòng chọn quyền!" }]}
           >
-            <Select placeholder="Chọn quyền">
+            <Select placeholder="Chọn quyền" disabled={!!editingUser}>
               <Select.Option value="ADMIN">Admin</Select.Option>
               <Select.Option value="USER">User</Select.Option>
             </Select>
@@ -357,6 +464,63 @@ const AdminUserManager = () => {
             <Input.TextArea placeholder="Nhập ghi chú" rows={3} />
           </Form.Item>
         </Form>
+      </Modal>
+      <Modal
+        title="Chi tiết nhân sự"
+        open={isDetailModalOpen}
+        onCancel={closeDetailModal}
+        footer={[
+          <Button key="close" onClick={closeDetailModal}>
+            Đóng
+          </Button>,
+        ]}
+        width={600}
+      >
+        <div>
+          <Row gutter={[16, 8]}>
+            <Col span={12}>
+              <div>
+                <b>Họ tên: </b> {detailUser?.hoTen}
+              </div>
+            </Col>
+            <Col span={12}>
+              <div>
+                <b>Mã định danh: </b> {detailUser?.maDinhDanh}
+              </div>
+            </Col>
+            <Col span={12}>
+              <div>
+                <b>Giới tính: </b>{" "}
+                {detailUser?.gioiTinh || detailUser?.gioiTinhTen}
+              </div>
+            </Col>
+            <Col span={12}>
+              <div>
+                <b>Dân tộc: </b> {detailUser?.danToc || detailUser?.danTocTen}
+              </div>
+            </Col>
+            <Col span={12}>
+              <div>
+                <b>Email: </b> {detailUser?.email}
+              </div>
+            </Col>
+            <Col span={12}>
+              <div>
+                <b>Username: </b> {detailUser?.userName}
+              </div>
+            </Col>
+            <Col span={12}>
+              <div>
+                <b>Quyền: </b> {detailUser?.roleName}
+              </div>
+            </Col>
+            <Col span={24}>
+              <div>
+                <b>Ghi chú: </b> {detailUser?.ghiChu}
+              </div>
+            </Col>
+          </Row>
+        </div>
       </Modal>
     </div>
   );

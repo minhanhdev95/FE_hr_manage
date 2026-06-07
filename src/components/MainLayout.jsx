@@ -1,11 +1,12 @@
 import React, { useState } from "react";
-import { Layout, Menu } from "antd";
+import { Layout, Menu, Avatar, Dropdown } from "antd";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
   PieChartOutlined,
   TeamOutlined,
   UserOutlined,
   LogoutOutlined,
+  BarsOutlined,
 } from "@ant-design/icons";
 import authService from "../services/authService";
 
@@ -31,21 +32,26 @@ const MainLayout = ({ children }) => {
       label: "Quản lý nhân sự",
     },
     {
+      key: "/admin-category-manager",
+      icon: <BarsOutlined />,
+      label: "Quản lý danh mục",
+    },
+    {
       key: "/tien-do-cong-viec",
       icon: <PieChartOutlined />,
       label: "Tiến độ công việc",
     },
     { key: "/tasks", icon: <UserOutlined />, label: "Công việc của tôi" },
-    {
-      key: "logout",
-      icon: <LogoutOutlined />,
-      label: "Đăng xuất",
-      danger: true,
-      onClick: () => {
-        localStorage.removeItem("token");
-        navigate("/login");
-      },
-    },
+    // {
+    //   key: "logout",
+    //   icon: <LogoutOutlined />,
+    //   label: "Đăng xuất",
+    //   danger: true,
+    //   onClick: () => {
+    //     localStorage.removeItem("token");
+    //     navigate("/login");
+    //   },
+    // },
   ];
 
   const filteredMenuItems = menuItems.filter((item) => {
@@ -73,8 +79,44 @@ const MainLayout = ({ children }) => {
           >
             HỆ THỐNG QUẢN LÝ NHÂN SỰ
           </div>
-          <div style={{ color: "white" }}>
-            Xin chào, {authService.getUserName()}
+          <div>
+            {(() => {
+              const items = [
+                {
+                  key: "logout",
+                  label: "Đăng xuất",
+                  icon: <LogoutOutlined />,
+                  danger: true,
+                },
+              ];
+
+              const handleMenuClick = ({ key }) => {
+                if (key === "logout") {
+                  localStorage.removeItem("token");
+                  navigate("/login");
+                }
+              };
+
+              return (
+                <Dropdown
+                  menu={{ items, onClick: handleMenuClick }}
+                  placement="bottomRight"
+                >
+                  <div
+                    style={{
+                      color: "white",
+                      cursor: "pointer",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 8,
+                    }}
+                  >
+                    <span>Xin chào, {authService.getUserName()}</span>
+                    <Avatar size="small" icon={<UserOutlined />} />
+                  </div>
+                </Dropdown>
+              );
+            })()}
           </div>
         </div>
       </Header>

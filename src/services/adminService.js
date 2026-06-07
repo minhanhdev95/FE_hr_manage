@@ -34,6 +34,10 @@ const adminService = {
     }),
 
   themNhanSu: (data) => axios.post("/api/admin/them-nhan-su", data),
+
+  capNhatNhanSu: (data) => axios.post("/api/admin/cap-nhat-nhan-su", data),
+
+  xoaNhanSu: (data) => axios.post("/api/admin/xoa-nhan-su", data),
 };
 
 export default adminService;
