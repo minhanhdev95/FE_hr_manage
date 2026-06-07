@@ -10,7 +10,11 @@ import {
   message,
   Select,
 } from "antd";
-import { SearchOutlined, ReloadOutlined } from "@ant-design/icons";
+import {
+  SearchOutlined,
+  ReloadOutlined,
+  PlusOutlined,
+} from "@ant-design/icons";
 import adminService from "../services/adminService";
 import danhMucService from "../services/danhMucService";
 import authService from "../services/authService";
@@ -105,7 +109,7 @@ const AdminUserManager = () => {
     <div style={{ padding: 24 }}>
       <Row gutter={24}>
         <Col span={24}>
-          <Card title={<b>Quản lý nhân sự</b>}>
+          <Card style={{ marginBottom: 16 }}>
             <Form form={filterForm} layout="vertical">
               <Row gutter={[16, 0]}>
                 <Col span={6}>
@@ -162,6 +166,7 @@ const AdminUserManager = () => {
                     display: "flex",
                     alignItems: "flex-end",
                     justifyContent: "flex-end",
+                    paddingBottom: "24px",
                   }}
                 >
                   <div>
@@ -185,18 +190,28 @@ const AdminUserManager = () => {
                 </Col>
               </Row>
             </Form>
-
-            <div style={{ marginTop: 16 }}>
-              <Table
-                columns={columns}
-                dataSource={users}
-                rowKey={(record) =>
-                  record.uuid || record.id || record.maDinhDanh
-                }
-                loading={loading}
-                pagination={{ pageSize: 10 }}
-              />
-            </div>
+          </Card>
+          <Card
+            title={<b>Danh sách nhân sự</b>}
+            extra={
+              <div style={{ display: "flex", gap: 8 }}>
+                <Button
+                  type="primary"
+                  icon={<PlusOutlined />}
+                  onClick={() => setIsGiaoViecOpen(true)}
+                >
+                  Thêm nhân sự
+                </Button>
+              </div>
+            }
+          >
+            <Table
+              columns={columns}
+              dataSource={users}
+              rowKey={(record) => record.uuid || record.id || record.maDinhDanh}
+              loading={loading}
+              pagination={{ pageSize: 10 }}
+            />
           </Card>
         </Col>
       </Row>
