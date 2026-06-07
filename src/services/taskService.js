@@ -18,6 +18,11 @@ const taskService = {
 
     findOne: (uuid) =>
         axios.get(`${API_BASE_URL}/find-one-by-uuid?uuid=${uuid}`),
+
+    // Lấy dữ liệu tiến độ công việc theo thời gian (định dạng MM-YYYY).
+    // BE: @GetMapping("/get-tien-do") -> congViecService.getTienDoCongViec(thoiGian)
+    getTienDo: (thoiGian) =>
+        axios.get(`${API_BASE_URL}/get-tien-do?thoiGian=${encodeURIComponent(thoiGian)}`),
 };
 
 export default taskService;

@@ -7,6 +7,7 @@ import DashboardPage from './pages/AdminDashboardPage';
 import AdminTaskManager from './pages/AdminTaskManager';
 import AdminUserManager from './pages/AdminUserManager';
 import TaskManager from './pages/TaskManager';
+import TienDoCongViec from './pages/TienDoCongViec';
 import NotFoundPage from './pages/NotFoundPage';
 
 // Import Bố cục chung (Layout)
@@ -72,9 +73,21 @@ function App() {
           } 
         />
 
+        {/* Trang Tiến độ công việc của nhân sự */}
+        <Route
+          path="/tien-do-cong-viec"
+          element={
+            <PrivateRoute>
+              <MainLayout>
+                <TienDoCongViec />
+              </MainLayout>
+            </PrivateRoute>
+          }
+        />
+
         {/* Trang Công việc cá nhân */}
-        <Route 
-          path="/tasks" 
+        <Route
+          path="/tasks"
           element={
             <PrivateRoute>
               <MainLayout>

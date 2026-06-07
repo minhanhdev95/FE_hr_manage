@@ -30,6 +30,7 @@ const MainLayout = ({ children }) => {
       icon: <UserOutlined />,
       label: "Quản lý nhân sự",
     },
+    { key: "/tien-do-cong-viec", icon: <PieChartOutlined />, label: "Tiến độ công việc" },
     { key: "/tasks", icon: <UserOutlined />, label: "Công việc của tôi" },
     {
       key: "logout",
@@ -46,8 +47,12 @@ const MainLayout = ({ children }) => {
   const filteredMenuItems = menuItems.filter((item) => {
     // hide admin-only routes when not admin
     if (!isAdmin && item.key && item.key.startsWith("/admin-")) return false;
-    // show /tasks only for ROLE_USER
-    if (item.key === "/tasks" && !isUser) return false;
+    // show user-only routes only for ROLE_USER
+    if (
+      (item.key === "/tasks" || item.key === "/tien-do-cong-viec") &&
+      !isUser
+    )
+      return false;
     return true;
   });
 
