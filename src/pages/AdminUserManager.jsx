@@ -9,6 +9,7 @@ import {
   Table,
   message,
   Select,
+  Modal,
 } from "antd";
 import {
   SearchOutlined,
@@ -25,6 +26,9 @@ const AdminUserManager = () => {
   const [genders, setGenders] = useState([]);
   const [ethnics, setEthnics] = useState([]);
   const [filterForm] = Form.useForm();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalForm] = Form.useForm();
+  const [submitting, setSubmitting] = useState(false);
 
   const loadUsers = async (params = {}) => {
     setLoading(true);
@@ -86,6 +90,22 @@ const AdminUserManager = () => {
 
   const handleReset = () => {
     filterForm.resetFields();
+  };
+
+  const handleAddPersonnel = async (values) => {
+    setSubmitting(true);
+    try {
+      await adminService.themNhanSu(values);
+      message.success("Thêm nhân sự thành công!");
+      setIsModalOpen(false);
+      modalForm.resetFields();
+      loadUsers();
+    } catch (err) {
+      console.error(err);
+      message.error("Lỗi thêm nhân sự");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   if (!authService.isAdmin()) {
@@ -198,7 +218,7 @@ const AdminUserManager = () => {
                 <Button
                   type="primary"
                   icon={<PlusOutlined />}
-                  onClick={() => setIsGiaoViecOpen(true)}
+                  onClick={() => setIsModalOpen(true)}
                 >
                   Thêm nhân sự
                 </Button>
@@ -215,6 +235,95 @@ const AdminUserManager = () => {
           </Card>
         </Col>
       </Row>
+
+      <Modal
+        title="Thêm nhân sự"
+        open={isModalOpen}
+        onOk={() => modalForm.submit()}
+        onCancel={() => {
+          setIsModalOpen(false);
+          modalForm.resetFields();
+        }}
+        confirmLoading={submitting}
+        width={600}
+      >
+        <Form form={modalForm} layout="vertical" onFinish={handleAddPersonnel}>
+          <Form.Item
+            name="hoTen"
+            label="Họ tên"
+            rules={[{ required: true, message: "Vui lòng nhập họ tên!" }]}
+          >
+            <Input placeholder="Nhập họ tên" />
+          </Form.Item>
+
+          <Form.Item
+            name="maDinhDanh"
+            label="Mã định danh"
+            rules={[{ required: true, message: "Vui lòng nhập mã định danh!" }]}
+          >
+            <Input placeholder="Nhập mã định danh" />
+          </Form.Item>
+
+          <Form.Item
+            name="gioiTinhId"
+            label="Giới tính"
+            rules={[{ required: true, message: "Vui lòng chọn giới tính!" }]}
+          >
+            <Select placeholder="Chọn giới tính">
+              {(genders || []).map((g) => (
+                <Select.Option key={g.id} value={g.id}>
+                  {g.ten}
+                </Select.Option>
+              ))}
+            </Select>
+          </Form.Item>
+
+          <Form.Item
+            name="danTocId"
+            label="Dân tộc"
+            rules={[{ required: true, message: "Vui lòng chọn dân tộc!" }]}
+          >
+            <Select placeholder="Chọn dân tộc">
+              {(ethnics || []).map((e) => (
+                <Select.Option key={e.id} value={e.id}>
+                  {e.ten}
+                </Select.Option>
+              ))}
+            </Select>
+          </Form.Item>
+
+          <Form.Item
+            name="email"
+            label="Email"
+            rules={[
+              { required: true, message: "Vui lòng nhập email!" },
+              { type: "email", message: "Email không hợp lệ!" },
+            ]}
+          >
+            <Input placeholder="Nhập email" />
+          </Form.Item>
+
+          <Form.Item
+            name="userName"
+            label="Username"
+            rules={[{ required: true, message: "Vui lòng nhập username!" }]}
+          >
+            <Input placeholder="Nhập username" />
+          </Form.Item>
+
+          <Form.Item
+            name="roleName"
+            label="Quyền"
+            rules={[{ required: true, message: "Vui lòng nhập quyền!" }]}
+          >
+            <Input placeholder="Nhập quyền (VD: ADMIN, USER)" />
+          </Form.Item>
+
+          <Form.Item name="ghiChu" label="Ghi chú">
+            <Input.TextArea placeholder="Nhập ghi chú" rows={3} />
+          </Form.Item>
+        </Form>
+      </Modal>
     </div>
   );
 };

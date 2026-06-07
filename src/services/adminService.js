@@ -32,6 +32,8 @@ const adminService = {
       ngayBatDau: data.ngayBatDau,
       ngayKetThuc: data.ngayKetThuc,
     }),
+
+  themNhanSu: (data) => axios.post("/api/admin/them-nhan-su", data),
 };
 
 export default adminService;
