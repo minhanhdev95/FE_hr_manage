@@ -18,6 +18,7 @@ import {
   PlusOutlined,
   EditOutlined,
   EyeOutlined,
+  DeleteOutlined,
 } from "@ant-design/icons";
 import adminService from "../services/adminService";
 import danhMucService from "../services/danhMucService";
@@ -135,15 +136,11 @@ const AdminUserManager = () => {
       render: (_, record) => {
         return (
           <Space>
+            <Button icon={<EditOutlined />} type="text" />
+            <Button icon={<EyeOutlined />} type="text" />
             <Button
-              icon={<EditOutlined />}
+              icon={<DeleteOutlined style={{ color: "red" }} />}
               type="text"
-              // onClick={() => handleOpenApproveModal(record)}
-            />
-            <Button
-              icon={<EyeOutlined />}
-              type="text"
-              // onClick={() => handleViewTask(record)}
             />
           </Space>
         );
