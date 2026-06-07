@@ -10,11 +10,14 @@ import {
   message,
   Select,
   Modal,
+  Space,
 } from "antd";
 import {
   SearchOutlined,
   ReloadOutlined,
   PlusOutlined,
+  EditOutlined,
+  EyeOutlined,
 } from "@ant-design/icons";
 import adminService from "../services/adminService";
 import danhMucService from "../services/danhMucService";
@@ -70,6 +73,8 @@ const AdminUserManager = () => {
         danTocId: values.danTocId,
         email: values.email,
         ghiChu: values.ghiChu,
+        userName: values.userName,
+        roleName: values.roleName,
       }).filter(
         ([, value]) => value !== undefined && value !== null && value !== "",
       ),
@@ -123,6 +128,27 @@ const AdminUserManager = () => {
     { title: "Username", dataIndex: "userName", key: "userName" },
     { title: "Quyền", dataIndex: "roleName", key: "roleName" },
     { title: "Ghi chú", dataIndex: "ghiChu", key: "ghiChu" },
+    {
+      title: "Thao tác",
+      width: 100,
+      fixed: "right",
+      render: (_, record) => {
+        return (
+          <Space>
+            <Button
+              icon={<EditOutlined />}
+              type="text"
+              // onClick={() => handleOpenApproveModal(record)}
+            />
+            <Button
+              icon={<EyeOutlined />}
+              type="text"
+              // onClick={() => handleViewTask(record)}
+            />
+          </Space>
+        );
+      },
+    },
   ];
 
   return (
@@ -176,12 +202,20 @@ const AdminUserManager = () => {
                   </Form.Item>
                 </Col>
                 <Col span={6}>
-                  <Form.Item name="ghiChu" label="Ghi chú">
-                    <Input placeholder="Nhập ghi chú" allowClear />
+                  <Form.Item name="userName" label="Username">
+                    <Input placeholder="Nhập username" allowClear />
+                  </Form.Item>
+                </Col>
+                <Col span={6}>
+                  <Form.Item name="roleName" label="Quyền">
+                    <Select placeholder="Chọn quyền">
+                      <Select.Option value="ADMIN">Admin</Select.Option>
+                      <Select.Option value="USER">User</Select.Option>
+                    </Select>
                   </Form.Item>
                 </Col>
                 <Col
-                  span={12}
+                  span={6}
                   style={{
                     display: "flex",
                     alignItems: "flex-end",
@@ -314,9 +348,12 @@ const AdminUserManager = () => {
           <Form.Item
             name="roleName"
             label="Quyền"
-            rules={[{ required: true, message: "Vui lòng nhập quyền!" }]}
+            rules={[{ required: true, message: "Vui lòng chọn quyền!" }]}
           >
-            <Input placeholder="Nhập quyền (VD: ADMIN, USER)" />
+            <Select placeholder="Chọn quyền">
+              <Select.Option value="ADMIN">Admin</Select.Option>
+              <Select.Option value="USER">User</Select.Option>
+            </Select>
           </Form.Item>
 
           <Form.Item name="ghiChu" label="Ghi chú">
