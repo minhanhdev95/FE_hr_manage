@@ -18,7 +18,7 @@ const LoginPage = () => {
       if (authService.isAdmin()) {
         navigate("/admin-dashboard");
       } else if (authService.isUser()) {
-        navigate("/user-dashboard");
+        navigate("/tien-do-cong-viec");
       }
     } catch (error) {
       if (error.response && error.response.status === 401) {
