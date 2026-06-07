@@ -30,7 +30,11 @@ const MainLayout = ({ children }) => {
       icon: <UserOutlined />,
       label: "Quản lý nhân sự",
     },
-    { key: "/tien-do-cong-viec", icon: <PieChartOutlined />, label: "Tiến độ công việc" },
+    {
+      key: "/tien-do-cong-viec",
+      icon: <PieChartOutlined />,
+      label: "Tiến độ công việc",
+    },
     { key: "/tasks", icon: <UserOutlined />, label: "Công việc của tôi" },
     {
       key: "logout",
@@ -48,17 +52,14 @@ const MainLayout = ({ children }) => {
     // hide admin-only routes when not admin
     if (!isAdmin && item.key && item.key.startsWith("/admin-")) return false;
     // show user-only routes only for ROLE_USER
-    if (
-      (item.key === "/tasks" || item.key === "/tien-do-cong-viec") &&
-      !isUser
-    )
+    if ((item.key === "/tasks" || item.key === "/tien-do-cong-viec") && !isUser)
       return false;
     return true;
   });
 
   return (
     <Layout style={{ minHeight: "100vh" }}>
-      <Header style={{ background: "#003A6D", padding: "0 24px" }}>
+      <Header style={{ background: "#001F3F", padding: "0 24px" }}>
         <div
           style={{
             display: "flex",
@@ -85,7 +86,7 @@ const MainLayout = ({ children }) => {
           collapsed={collapsed}
           onCollapse={(value) => setCollapsed(value)}
           collapsedWidth={80}
-          style={{ background: "#001F3F" }}
+          style={{ background: "#003A6D" }}
         >
           <Menu
             theme="dark"
@@ -93,7 +94,7 @@ const MainLayout = ({ children }) => {
             selectedKeys={[location.pathname]}
             items={filteredMenuItems}
             onClick={({ key }) => key !== "logout" && navigate(key)}
-            style={{ background: "#001F3F" }}
+            style={{ background: "#003A6D" }}
           />
         </Sider>
         <Layout>
