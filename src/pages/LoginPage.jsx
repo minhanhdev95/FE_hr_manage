@@ -19,11 +19,15 @@ const LoginPage = () => {
         navigate("/admin-dashboard");
       } else if (authService.isUser()) {
         navigate("/user-dashboard");
-      } else {
-        navigate("/login");
       }
     } catch (error) {
-      message.error("Tài khoản hoặc mật khẩu không đúng!");
+      if (error.response && error.response.status === 401) {
+        message.error("Tài khoản hoặc mật khẩu ko đúng");
+      } else {
+        message.error(
+          error.response?.data?.message || "Lỗi đăng nhập, vui lòng thử lại",
+        );
+      }
     } finally {
       setLoading(false);
     }
