@@ -11,6 +11,7 @@ import {
   Select,
   Modal,
   Space,
+  Tag,
 } from "antd";
 import {
   SearchOutlined,
@@ -19,6 +20,8 @@ import {
   EditOutlined,
   EyeOutlined,
   DeleteOutlined,
+  LockOutlined,
+  UnlockOutlined,
 } from "@ant-design/icons";
 import adminService from "../services/adminService";
 import danhMucService from "../services/danhMucService";
@@ -161,14 +164,14 @@ const AdminUserManager = () => {
 
   const handleDeleteUser = (record) => {
     if (record && record.roleName === "ADMIN") {
-      message.error("Không được xoá tài khoản ROLE_ADMIN");
+      message.error("Không được khoá tài khoản ROLE_ADMIN");
       return;
     }
 
     Modal.confirm({
-      title: "Xác nhận xoá",
-      content: `Bạn có chắc muốn xoá nhân sự "${record.hoTen || record.userName || ""}"?`,
-      okText: "Xoá",
+      title: "Xác nhận khoá tài khoản",
+      content: `Bạn có chắc muốn khoá tài khoản nhân sự "${record.hoTen || record.userName || ""}"?`,
+      okText: "Khoá",
       okType: "danger",
       cancelText: "Hủy",
       onOk: async () => {
@@ -182,11 +185,41 @@ const AdminUserManager = () => {
               }
             : { id: record.id, email: record.email, userName: record.userName };
           await adminService.xoaNhanSu(payload);
-          message.success("Xoá nhân sự thành công!");
+          message.success("Khoá tài khoản nhân sự thành công!");
           loadUsers();
         } catch (err) {
           console.error(err);
-          message.error("Lỗi khi xoá nhân sự");
+          message.error("Lỗi khi khoá nhân sự");
+        } finally {
+          setLoading(false);
+        }
+      },
+    });
+  };
+
+  const handleMoKhoaUser = (record) => {
+    Modal.confirm({
+      title: "Xác nhận mở khoá",
+      content: `Bạn có chắc muốn mở khoá tài khoản nhân sự "${record.hoTen || record.userName || ""}"?`,
+      okText: "Mở khoá",
+      okType: "primary",
+      cancelText: "Hủy",
+      onOk: async () => {
+        try {
+          setLoading(true);
+          const payload = record.uuid
+            ? {
+                uuid: record.uuid,
+                email: record.email,
+                userName: record.userName,
+              }
+            : { id: record.id, email: record.email, userName: record.userName };
+          await adminService.moKhoaNhanSu(payload);
+          message.success("Mở khoá tài khoản nhân sự thành công!");
+          loadUsers();
+        } catch (err) {
+          console.error(err);
+          message.error("Lỗi khi mở khoá nhân sự");
         } finally {
           setLoading(false);
         }
@@ -200,6 +233,15 @@ const AdminUserManager = () => {
     );
   }
 
+  const getIsActive = (isActive) => {
+    switch (isActive) {
+      case 1:
+        return { color: "blue" };
+      case 0:
+        return { color: "red" };
+    }
+  };
+
   const columns = [
     { title: "Họ tên", dataIndex: "hoTen", key: "hoTen" },
     { title: "Mã định danh", dataIndex: "maDinhDanh", key: "maDinhDanh" },
@@ -208,6 +250,16 @@ const AdminUserManager = () => {
     { title: "Email", dataIndex: "email", key: "email" },
     { title: "Username", dataIndex: "userName", key: "userName" },
     { title: "Quyền", dataIndex: "roleName", key: "roleName" },
+    {
+      title: "Trạng thái",
+      dataIndex: "isActive",
+      key: "isActive",
+      render: (t, record) => (
+        <Tag {...getIsActive(record.isActive)}>
+          {t === 1 ? "Đang hoạt động" : "Đã bị khoá"}
+        </Tag>
+      ),
+    },
     { title: "Ghi chú", dataIndex: "ghiChu", key: "ghiChu" },
     {
       title: "Thao tác",
@@ -229,18 +281,26 @@ const AdminUserManager = () => {
             />
             <Button
               icon={
-                <DeleteOutlined
-                  style={record.roleName === "ADMIN" ? {} : { color: "red" }}
-                />
+                record.isActive !== 1 ? (
+                  <UnlockOutlined style={{ color: "green" }} />
+                ) : (
+                  <LockOutlined
+                    style={record.roleName === "ADMIN" ? {} : { color: "red" }}
+                  />
+                )
               }
               type="text"
               disabled={record.roleName === "ADMIN"}
-              title={
-                record.roleName === "ADMIN"
-                  ? "Không thể xoá tài khoản Admin"
-                  : undefined
+              // title={
+              // record.roleName === "ADMIN"
+              //   ? "Không thể mở khoá tài khoản Admin"
+              //   : undefined
+              // }
+              onClick={() =>
+                record.isActive !== 1
+                  ? handleMoKhoaUser(record)
+                  : handleDeleteUser(record)
               }
-              onClick={() => handleDeleteUser(record)}
             />
           </Space>
         );
@@ -452,9 +512,10 @@ const AdminUserManager = () => {
           <Form.Item
             name="roleName"
             label="Quyền"
-            rules={[{ required: true, message: "Vui lòng chọn quyền!" }]}
+            // rules={[{ required: true, message: "Vui lòng chọn quyền!" }]}
+            initialValue="USER"
           >
-            <Select placeholder="Chọn quyền" disabled={!!editingUser}>
+            <Select placeholder="Chọn quyền" disabled>
               <Select.Option value="ADMIN">Admin</Select.Option>
               <Select.Option value="USER">User</Select.Option>
             </Select>
