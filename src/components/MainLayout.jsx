@@ -1,5 +1,14 @@
 import React, { useState } from "react";
-import { Layout, Menu, Avatar, Dropdown } from "antd";
+import {
+  Layout,
+  Menu,
+  Avatar,
+  Dropdown,
+  Modal,
+  Form,
+  Input,
+  message,
+} from "antd";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
   PieChartOutlined,
@@ -7,6 +16,7 @@ import {
   UserOutlined,
   LogoutOutlined,
   BarsOutlined,
+  KeyOutlined,
 } from "@ant-design/icons";
 import authService from "../services/authService";
 
@@ -14,6 +24,8 @@ const { Header, Sider, Content } = Layout;
 
 const MainLayout = ({ children }) => {
   const [collapsed, setCollapsed] = useState(false);
+  const [changePasswordVisible, setChangePasswordVisible] = useState(false);
+  const [changePasswordForm] = Form.useForm();
   const navigate = useNavigate();
   const location = useLocation();
   const isAdmin = authService.isAdmin();
@@ -83,17 +95,25 @@ const MainLayout = ({ children }) => {
             {(() => {
               const items = [
                 {
+                  key: "profile",
+                  label: "Đổi mật khẩu",
+                  icon: <KeyOutlined />,
+                },
+                {
                   key: "logout",
                   label: "Đăng xuất",
                   icon: <LogoutOutlined />,
                   danger: true,
                 },
               ];
-
               const handleMenuClick = ({ key }) => {
                 if (key === "logout") {
                   localStorage.removeItem("token");
                   navigate("/login");
+                }
+                if (key === "profile") {
+                  changePasswordForm.resetFields();
+                  setChangePasswordVisible(true);
                 }
               };
 
@@ -120,6 +140,83 @@ const MainLayout = ({ children }) => {
           </div>
         </div>
       </Header>
+      <Modal
+        title="Đổi mật khẩu"
+        open={changePasswordVisible}
+        onOk={async () => {
+          try {
+            const values = await changePasswordForm.validateFields();
+            await authService.changePassword({
+              currentPassword: values.currentPassword,
+              newPassword: values.newPassword,
+            });
+            message.success("Đổi mật khẩu thành công");
+            setChangePasswordVisible(false);
+            changePasswordForm.resetFields();
+          } catch (error) {
+            if (error?.errorFields) return;
+            message.error(
+              error?.response?.data?.message || "Đổi mật khẩu thất bại",
+            );
+          }
+        }}
+        onCancel={() => setChangePasswordVisible(false)}
+        okText="Lưu"
+        cancelText="Hủy"
+        destroyOnClose
+      >
+        <Form form={changePasswordForm} layout="vertical">
+          <Form.Item
+            name="currentPassword"
+            label="Mật khẩu hiện tại"
+            rules={[
+              {
+                required: true,
+                message: "Mật khẩu hiện tại không được để trống",
+              },
+            ]}
+          >
+            <Input.Password placeholder="Nhập mật khẩu hiện tại" />
+          </Form.Item>
+
+          <Form.Item
+            name="newPassword"
+            label="Mật khẩu mới"
+            rules={[
+              {
+                required: true,
+                message: "Mật khẩu mới không được để trống",
+              },
+            ]}
+          >
+            <Input.Password placeholder="Nhập mật khẩu mới" />
+          </Form.Item>
+
+          <Form.Item
+            name="confirmPassword"
+            label="Xác nhận mật khẩu mới"
+            dependencies={["newPassword"]}
+            rules={[
+              {
+                required: true,
+                message: "Vui lòng xác nhận mật khẩu mới",
+              },
+              ({ getFieldValue }) => ({
+                validator(_, value) {
+                  if (!value || getFieldValue("newPassword") === value) {
+                    return Promise.resolve();
+                  }
+                  return Promise.reject(
+                    new Error("Mật khẩu xác nhận không khớp"),
+                  );
+                },
+              }),
+            ]}
+          >
+            <Input.Password placeholder="Nhập lại mật khẩu mới" />
+          </Form.Item>
+        </Form>
+      </Modal>
       <Layout>
         <Sider
           theme="dark"

@@ -67,6 +67,8 @@ const authService = {
     const roles = authService.getRoles();
     return roles.includes("ROLE_USER");
   },
+
+  changePassword: (data) => axios.post("/api/auth/change-password", data),
 };
 
 export default authService;
